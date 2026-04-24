@@ -1,0 +1,31 @@
+# WordPress core en third-party
+app/public/wp-admin/
+app/public/wp-includes/
+app/public/wp-content/plugins/*
+app/public/wp-content/themes/*
+!app/public/wp-content/themes/praatdeurtje-child/
+!app/public/wp-content/themes/praatdeurtje-child/**
+app/public/wp-content/uploads/
+app/public/wp-content/upgrade/
+app/public/wp-content/cache/
+app/public/wp-content/index.php
+app/public/wp-content/languages/
+
+# Secrets en runtime
+app/public/wp-config.php
+app/public/.htaccess
+app/public/*.php
+app/public/*.html
+app/public/*.txt
+conf/
+
+# IDE / logs
+.idea/
+*.iml
+logs/
+*.log
+*.sql
+*.bak
+node_modules/
+*.zip
+*.phar
