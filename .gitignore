@@ -31,3 +31,7 @@ logs/
 node_modules/
 *.zip
 *.phar
+
+# Ops — credentials en gegenereerde bundles nooit committen
+.ops/sync-remote.json
+.ops/sync-bundle.latest.json
