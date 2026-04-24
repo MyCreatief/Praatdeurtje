@@ -1,0 +1,317 @@
+/*
+Theme Name:   Flatsome Child
+Theme URI:    https://mycreatief.nl
+Description:  MyCreatief child theme for Flatsome
+Author:       MyCreatief
+Template:     flatsome
+Version:      1.0.0
+Text Domain:  flatsome-child
+*/
+
+/* Verberg de categorielabel boven producttitels op categoriepagina's */
+.tax-product_cat .product-cats,
+.tax-product_cat .woocommerce-loop-product__categories,
+.tax-product_cat .product_cat {
+    display: none;
+}
+
+/* ── Categorie-header: featured met achtergrondafbeelding ── */
+
+/* Geef de header hoogte en centreer inhoud verticaal */
+.category-page-title.featured-title {
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+}
+
+.category-page-title.featured-title .page-title-inner {
+    align-items: center;
+    width: 100%;
+}
+
+/* Sorteer-dropdown leesbaar op donkere overlay, met zichtbaar pijltje */
+.category-page-title .woocommerce-ordering select.orderby {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: rgba(255,255,255,0.15);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='white'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 4px;
+    color: #fff;
+    padding: 6px 28px 6px 10px;
+    font-family: inherit;
+    font-size: 0.85em;
+    cursor: pointer;
+}
+
+.category-page-title .woocommerce-ordering select.orderby option {
+    background: #4b3925;
+    color: #fff;
+}
+
+/* Resultaattelling wit op donkere achtergrond */
+.category-page-title .woocommerce-result-count {
+    color: rgba(255,255,255,0.85);
+}
+
+/* ── Footer — donker walnoot met korreltextuur ── */
+
+/*
+ * Korreltextuur via SVG feTurbulence — pure CSS, geen afbeelding nodig.
+ * Op lichte achtergrond: opacity laag (0.035) voor subtiel schuurpapier-effect.
+ */
+.footer-1,
+.absolute-footer {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+
+/* Warm bruin accent-streepje bovenaan */
+.footer-1 {
+    border-top: 2px solid #c9a98a;
+}
+
+/* Widget-titels: brand bruin */
+.footer-1 .widget-title,
+.footer-1 span.widget-title {
+    color: #7b462b !important;
+    font-size: 0.78em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* Scheidingslijn onder de widget-titel */
+.footer-1 .is-divider {
+    background-color: #ddd5cc !important;
+    margin-bottom: 14px;
+}
+
+/* Persoonlijke tagline */
+.footer-tagline {
+    font-size: 0.84em;
+    line-height: 1.65;
+    color: #7b462b;
+    margin-top: 12px;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+/* Klein nootje in de contact-kolom */
+.footer-note {
+    margin-top: 14px;
+    font-size: 0.77em;
+    color: #a08878;
+    line-height: 1.55;
+    font-style: italic;
+}
+
+/* Categorie- en contact-links */
+.footer-nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.footer-nav-links li {
+    margin-bottom: 8px;
+}
+
+.footer-nav-links a {
+    color: #4b3925;
+    text-decoration: none;
+    font-size: 0.88em;
+    transition: color 0.15s;
+    display: inline-block;
+}
+
+/* Pijltje verschijnt bij hover */
+.footer-nav-links a::before {
+    content: "→ ";
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-size: 0.85em;
+    color: #b89b76;
+}
+
+.footer-nav-links a:hover::before {
+    opacity: 1;
+}
+
+.footer-nav-links a:hover {
+    color: #7b462b;
+}
+
+/* ── Absolute footer ── */
+.absolute-footer {
+    border-top: 1px solid #ddd5cc;
+}
+
+.absolute-footer.dark a,
+.absolute-footer.dark .footer-nav a {
+    color: #7b462b !important;
+    text-decoration: none;
+}
+
+.absolute-footer.dark a:hover {
+    text-decoration: underline;
+    text-decoration-color: #c9a98a;
+}
+
+.absolute-footer.dark .copyright-footer {
+    color: #8a7060;
+    font-size: 0.82em;
+}
+
+/* PayPal en iDEAL iconen in brand bruin */
+.absolute-footer .payment-icon svg {
+    fill: #7b462b;
+    opacity: 0.75;
+}
+
+.absolute-footer .payment-icon:hover svg {
+    opacity: 1;
+}
+
+/* Punten als scheiding tussen juridische links */
+.absolute-footer .footer-nav.links li + li::before {
+    content: "·";
+    margin: 0 5px;
+    color: #c9a98a;
+    display: inline-block;
+}
+
+/* === Productgrid: rustig en scanbaar === */
+
+/* Verberg korte omschrijving in de grid — die hoort op de productpagina */
+.products .box-excerpt {
+    display: none;
+}
+
+/* Links uitlijnen: minder druk dan gecentreerd */
+.products .box-text-products {
+    text-align: left;
+}
+
+/* Categorie-label iets subtieler */
+.products .product-cat.category {
+    opacity: 0.65;
+    letter-spacing: 0.06em;
+}
+
+/* ══ Homepage — warmer, gezelliger en meer merkeigen ══════════════════════ */
+
+/* Sectietitels: diep warm bruin i.p.v. standaard donkergrijs */
+.home .section h2 {
+    color: #4b2e18;
+}
+
+/* Decoratieve streepjes (is-divider) overal op de homepage: koper */
+.home .is-divider {
+    background-color: #c9a98a !important;
+}
+
+/* Warm crème achtergrond voor "Meest geliefd" en "Laat je inspireren" */
+#section_860664587,
+#section_264040557 {
+    background-color: #faf6f1;
+}
+
+/* Producttitel: iets vetter voor meer karakter */
+.products .product-small .name a {
+    font-weight: 700;
+}
+
+/* Prijs: subtieler (zoals "X products" bij collecties) */
+.products .product-small .price-wrapper {
+    font-size: 0.85em;
+    color: #8a7060;
+}
+
+/* Verberg categorie-labels boven producttitels in de grid (overal) */
+.products .product-cats,
+.products .woocommerce-loop-product__categories {
+    display: none;
+}
+
+/* ── Stap-koppen "Zo maak ik het"
+   JS (functions.php) voegt .step-num en .step-label toe aan elke h3.
+   Resultaat: groot licht ghostgetal boven een koperen lijn + label.        ── */
+.home .col-inner h3 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    line-height: 1;
+}
+
+.home .col-inner h3 .step-num {
+    display: block;
+    font-size: 4.2em;
+    font-weight: 900;
+    color: rgba(74, 46, 24, 0.09);
+    line-height: 0.85;
+    margin-bottom: 16px;
+    letter-spacing: -0.04em;
+    font-family: 'Domine', Georgia, serif;
+    user-select: none;
+}
+
+.home .col-inner h3 .step-label {
+    display: block;
+    font-size: 0.70em;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #4b2e18;
+    border-top: 2px solid #c9a98a;
+    padding-top: 14px;
+}
+
+/* Stap-omschrijvingstekst: warmere toon */
+#section_2055646327 .col-inner > p {
+    color: #5a3d2b;
+    line-height: 1.80;
+    font-size: 0.92em;
+}
+
+/* Productkaarten: warme schaduw bij hover */
+.home .product-small .box {
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.home .product-small:hover .box {
+    box-shadow: 0 6px 24px rgba(74, 46, 24, 0.11);
+    transform: translateY(-2px);
+}
+
+/* ── Blog overzicht ───────────────────────────────────────────── */
+
+/* Kaart hover: zelfde gevoel als productkaarten */
+.blog-item {
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.blog-item:hover {
+    box-shadow: 0 6px 24px rgba(74, 46, 24, 0.11);
+    transform: translateY(-2px);
+}
+
+/* Titels in blog-kaarten: warme bruine kleur */
+.blog-item .blog-title a {
+    color: #3d2b1a;
+}
+.blog-item .blog-title a:hover {
+    color: #c8a882;
+}
+
+/* "Lees verder"-knop: omlijnd, warm bruin */
+.blog-item .button.outline,
+.blog-item .button.outlined {
+    border-color: #c8a882 !important;
+    color: #5c3d2e !important;
+    border-radius: 3px;
+}
+.blog-item .button.outline:hover,
+.blog-item .button.outlined:hover {
+    background-color: #c8a882 !important;
+    color: #fff !important;
+}
