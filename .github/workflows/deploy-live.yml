@@ -1,0 +1,75 @@
+name: Deploy Live
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-live
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Lint theme PHP
+        run: |
+          find app/public/wp-content/themes/flatsome-child -type f -name "*.php" -print0 | while IFS= read -r -d '' file; do
+            php -l "$file"
+          done
+
+      - name: Lint plugin PHP
+        run: |
+          find app/public/wp-content/plugins/praatdeurtje-core -type f -name "*.php" -print0 | while IFS= read -r -d '' file; do
+            php -l "$file"
+          done
+
+      - name: Install deploy tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Deploy theme, fonts and plugin via SFTP
+        env:
+          LIVE_SFTP_HOST: ${{ secrets.LIVE_SFTP_HOST }}
+          LIVE_SFTP_PORT: ${{ secrets.LIVE_SFTP_PORT }}
+          LIVE_SFTP_USERNAME: ${{ secrets.LIVE_SFTP_USERNAME }}
+          LIVE_SFTP_PASSWORD: ${{ secrets.LIVE_SFTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          lftp -u "$LIVE_SFTP_USERNAME","$LIVE_SFTP_PASSWORD" -p "$LIVE_SFTP_PORT" "sftp://$LIVE_SFTP_HOST" <<'LFTP'
+          set sftp:auto-confirm yes
+          set net:max-retries 2
+          set net:timeout 20
+          mirror -R --delete --verbose \
+            --exclude-glob .git/ \
+            --exclude-glob node_modules/ \
+            --exclude-glob '*.zip' \
+            --exclude-glob '.DS_Store' \
+            app/public/wp-content/themes/flatsome-child /praatdeurtje.nl/wp-content/themes/flatsome-child
+          mirror -R --delete --verbose \
+            --exclude-glob .git/ \
+            --exclude-glob '.DS_Store' \
+            app/public/wp-content/fonts /praatdeurtje.nl/wp-content/fonts
+          mirror -R --delete --verbose \
+            --exclude-glob .git/ \
+            --exclude-glob '.DS_Store' \
+            app/public/wp-content/plugins/praatdeurtje-core /praatdeurtje.nl/wp-content/plugins/praatdeurtje-core
+          LFTP
