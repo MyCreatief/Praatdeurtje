@@ -81,7 +81,7 @@ class Praatdeurtje_Sync_Center
         $results = array();
         foreach ($body['statements'] as $i => $sql) {
             $sql = trim((string) $sql);
-            if ('' === $sql || str_starts_with($sql, '--')) {
+            if ('' === $sql || strpos($sql, '--') === 0) {
                 continue;
             }
             $result = $wpdb->query($sql);
