@@ -53,6 +53,51 @@ class Praatdeurtje_Sync_Center
                 },
             )
         );
+        register_rest_route(
+            self::REST_NAMESPACE,
+            '/sql/run',
+            array(
+                'methods'             => 'POST',
+                'callback'            => array($this, 'handle_rest_sql_run'),
+                'permission_callback' => static function () {
+                    return current_user_can('manage_options');
+                },
+            )
+        );
+    }
+
+    public function handle_rest_sql_run(WP_REST_Request $request)
+    {
+        global $wpdb;
+
+        $body = json_decode((string) $request->get_body(), true);
+        if (!isset($body['statements']) || !is_array($body['statements'])) {
+            return new WP_Error('missing_statements', 'Veld "statements" ontbreekt of is geen array.', array('status' => 400));
+        }
+
+        $wpdb->query('SET NAMES utf8mb4');
+        $wpdb->query("SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION'");
+
+        $results = array();
+        foreach ($body['statements'] as $i => $sql) {
+            $sql = trim((string) $sql);
+            if ('' === $sql || str_starts_with($sql, '--')) {
+                continue;
+            }
+            $result = $wpdb->query($sql);
+            if (false === $result) {
+                return new WP_Error(
+                    'sql_error',
+                    sprintf('Fout bij statement %d: %s', $i + 1, $wpdb->last_error),
+                    array('status' => 500)
+                );
+            }
+            $results[] = array('statement' => $i + 1, 'rows_affected' => $result);
+        }
+
+        $this->clear_caches();
+
+        return rest_ensure_response(array('ok' => true, 'ran' => count($results), 'results' => $results));
     }
 
     public function handle_rest_options_dump(WP_REST_Request $request)
