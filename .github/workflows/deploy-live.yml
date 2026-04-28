@@ -72,4 +72,5 @@ jobs:
             --exclude-glob .git/ \
             --exclude-glob '.DS_Store' \
             app/public/wp-content/plugins/praatdeurtje-core /praatdeurtje.nl/wp-content/plugins/praatdeurtje-core
+          put app/public/.htaccess -o /praatdeurtje.nl/.htaccess
           LFTP
