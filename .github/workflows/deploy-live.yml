@@ -63,14 +63,13 @@ jobs:
             --exclude-glob node_modules/ \
             --exclude-glob '*.zip' \
             --exclude-glob '.DS_Store' \
-            app/public/wp-content/themes/flatsome-child /praatdeurtje.nl/wp-content/themes/flatsome-child
+            app/public/wp-content/themes/flatsome-child /public_html/wp-content/themes/flatsome-child
           mirror -R --delete --verbose \
             --exclude-glob .git/ \
             --exclude-glob '.DS_Store' \
-            app/public/wp-content/fonts /praatdeurtje.nl/wp-content/fonts
+            app/public/wp-content/fonts /public_html/wp-content/fonts
           mirror -R --delete --verbose \
             --exclude-glob .git/ \
             --exclude-glob '.DS_Store' \
-            app/public/wp-content/plugins/praatdeurtje-core /praatdeurtje.nl/wp-content/plugins/praatdeurtje-core
-          put app/public/.htaccess -o /praatdeurtje.nl/.htaccess
+            app/public/wp-content/plugins/praatdeurtje-core /public_html/wp-content/plugins/praatdeurtje-core
           LFTP
