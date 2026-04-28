@@ -15,7 +15,7 @@ app/public/wp-content/languages/
 
 # Secrets en runtime
 app/public/wp-config.php
-app/public/.htaccess
+# .htaccess bewust niet genegeerd — bevat HTTP_AUTHORIZATION fix voor SiteGround
 app/public/*.php
 app/public/*.html
 app/public/*.txt
