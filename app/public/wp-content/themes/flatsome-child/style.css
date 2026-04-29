@@ -315,3 +315,52 @@ Text Domain:  flatsome-child
     background-color: #c8a882 !important;
     color: #fff !important;
 }
+
+/* ── Meer van Mylene — projecten balk ───────────────────────────────────── */
+.mylene-projects-bar {
+    display: flex;
+    align-items: center;
+    gap: 0 32px;
+    flex-wrap: wrap;
+    padding: 14px 24px;
+    background: #f9f7f4;
+    border-top: 1px solid #e0d9d0;
+    font-size: 0.82em;
+    line-height: 1.45;
+}
+.mylene-projects-label {
+    font-weight: 700;
+    color: #7b5c3e;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.mylene-project-link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    padding: 2px 0;
+    border-bottom: none !important;
+}
+.mylene-project-link strong {
+    color: #4b2e18;
+    font-weight: 700;
+}
+.mylene-project-link span {
+    color: #8a7060;
+}
+.mylene-project-link:hover strong {
+    color: #7b462b;
+    text-decoration: underline;
+}
+@media (max-width: 640px) {
+    .mylene-projects-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 20px;
+    }
+}
