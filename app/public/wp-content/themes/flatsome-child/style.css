@@ -347,6 +347,15 @@ Text Domain:  flatsome-child
     color: #4b2e18;
 }
 
+/* Light-varianten voor donkere secties */
+.prd-step-num--light {
+    color: rgba(245, 232, 213, 0.10);
+}
+.prd-step-label--light {
+    color: #f5e8d5;
+    border-top-color: #c9a98a;
+}
+
 /* ── Homepage: voor-wie kaarten ──────────────────────────────────────────── */
 .prd-audience-card {
     display: block;
