@@ -379,20 +379,21 @@ Text Domain:  flatsome-child
 .mylene-projects-bar {
     display: flex;
     align-items: center;
-    gap: 0 32px;
+    justify-content: center;
+    gap: 0 40px;
     flex-wrap: wrap;
-    padding: 14px 24px;
-    background: #f9f7f4;
-    border-top: 1px solid #e0d9d0;
+    padding: 16px 24px;
+    background: #f4ede4 !important;
+    border-top: 2px solid #c9a98a;
     font-size: 0.82em;
     line-height: 1.45;
 }
 .mylene-projects-label {
     font-weight: 700;
     color: #7b5c3e;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    font-size: 0.85em;
+    font-size: 0.82em;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -418,8 +419,9 @@ Text Domain:  flatsome-child
 @media (max-width: 640px) {
     .mylene-projects-bar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
         gap: 12px;
-        padding: 16px 20px;
+        padding: 20px 20px;
+        text-align: center;
     }
 }
