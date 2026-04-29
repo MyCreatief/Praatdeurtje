@@ -275,7 +275,9 @@ Text Domain:  flatsome-child
 }
 
 /* Afgeronde hoekjes op productafbeeldingen */
-.product-small .box-image {
+.product-small .box-image,
+.product-small .box-image [class*="image-"],
+.product-small .box-image img {
     border-radius: 8px;
     overflow: hidden;
 }
