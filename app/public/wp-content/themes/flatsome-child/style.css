@@ -347,6 +347,11 @@ Text Domain:  flatsome-child
     color: #4b2e18;
 }
 
+/* Donkere sectie-achtergrond (bg_color werkt niet via REST, class wel) */
+.prd-dark-section {
+    background: #2e1b0e !important;
+}
+
 /* Light-varianten voor donkere secties */
 .prd-step-num--light {
     color: rgba(245, 232, 213, 0.13);
