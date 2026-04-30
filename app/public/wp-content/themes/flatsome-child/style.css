@@ -421,11 +421,18 @@ Text Domain:  flatsome-child
 
 /* ── Homepage: voor-wie kaarten ──────────────────────────────────────────── */
 
-/* Ruimte tussen de audience-kaarten (row-collapse verwijdert standaard gutters) */
+/* Audience-kaarten: grid met gutter, gecentreerd */
 .row:has(.prd-audience-card) {
-    gap: 16px;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    padding-left: max(24px, calc(50% - 490px)) !important;
+    padding-right: max(24px, calc(50% - 490px)) !important;
+}
+
+.row:has(.prd-audience-card) .col {
+    max-width: 100% !important;
+    width: 100% !important;
 }
 
 .prd-audience-card {
