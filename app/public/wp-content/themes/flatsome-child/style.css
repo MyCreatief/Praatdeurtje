@@ -370,8 +370,8 @@ Text Domain:  flatsome-child
 }
 
 /* Kaarten gecentreerd en max ~980px breed — achtergrond blijft vol */
+/* Spacing tussen kaarten komt van col-inner padding (UX Builder), geen gap nodig */
 .prd-dark-section.row {
-    gap: 16px;
     padding-left: max(24px, calc(50% - 490px)) !important;
     padding-right: max(24px, calc(50% - 490px)) !important;
 }
