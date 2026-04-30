@@ -369,11 +369,11 @@ Text Domain:  flatsome-child
     border-top-color: #c9a98a;
 }
 
-/* Ruimte tussen de kaarten en vanaf de randen */
+/* Kaarten gecentreerd en max ~980px breed — achtergrond blijft vol */
 .prd-dark-section.row {
     gap: 16px;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    padding-left: max(24px, calc(50% - 490px)) !important;
+    padding-right: max(24px, calc(50% - 490px)) !important;
 }
 
 /* Glaskaart per stap op donkere achtergrond */
