@@ -426,13 +426,11 @@ Text Domain:  flatsome-child
 
 /* ── Homepage: voor-wie kaarten ──────────────────────────────────────────── */
 
-/* Audience-kaarten: expliciet 3-koloms grid met gutter, gecentreerd */
+/* Audience-kaarten: 3-koloms grid — Flatsome's max-width centreert al */
 .row:has(.prd-audience-card) {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    padding-left: max(24px, calc(50% - 490px)) !important;
-    padding-right: max(24px, calc(50% - 490px)) !important;
 }
 
 .row:has(.prd-audience-card) .col {
