@@ -408,6 +408,14 @@ Text Domain:  flatsome-child
 }
 
 /* ── Homepage: voor-wie kaarten ──────────────────────────────────────────── */
+
+/* Ruimte tussen de audience-kaarten (row-collapse verwijdert standaard gutters) */
+.row:has(.prd-audience-card) {
+    gap: 16px;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+}
+
 .prd-audience-card {
     display: block;
     padding: 30px 24px;
