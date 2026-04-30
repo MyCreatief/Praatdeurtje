@@ -375,17 +375,22 @@ Text Domain:  flatsome-child
     padding-right: max(24px, calc(50% - 490px)) !important;
 }
 
-/* Kaarten-rij: grid zodat gap correct werkt als gutter */
+/* Kaarten-rij: expliciet 3-koloms grid met gutter */
 .prd-dark-section.row:has(.prd-step-card) {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-/* Reset Flatsome's flex-kolom breedtes — niet nodig in grid context */
 .prd-dark-section.row:has(.prd-step-card) .col {
     max-width: 100% !important;
     width: 100% !important;
+}
+
+@media (max-width: 640px) {
+    .prd-dark-section.row:has(.prd-step-card) {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Glaskaart per stap op donkere achtergrond */
@@ -421,10 +426,10 @@ Text Domain:  flatsome-child
 
 /* ── Homepage: voor-wie kaarten ──────────────────────────────────────────── */
 
-/* Audience-kaarten: grid met gutter, gecentreerd */
+/* Audience-kaarten: expliciet 3-koloms grid met gutter, gecentreerd */
 .row:has(.prd-audience-card) {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     padding-left: max(24px, calc(50% - 490px)) !important;
     padding-right: max(24px, calc(50% - 490px)) !important;
@@ -433,6 +438,12 @@ Text Domain:  flatsome-child
 .row:has(.prd-audience-card) .col {
     max-width: 100% !important;
     width: 100% !important;
+}
+
+@media (max-width: 640px) {
+    .row:has(.prd-audience-card) {
+        grid-template-columns: 1fr;
+    }
 }
 
 .prd-audience-card {
