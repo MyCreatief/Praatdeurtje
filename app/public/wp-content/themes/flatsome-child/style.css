@@ -347,8 +347,9 @@ Text Domain:  flatsome-child
     color: #4b2e18;
 }
 
-/* Donkere sectie: bosgroen gradient + korreltextuur */
+/* Donkere sectie: bosgroen gradient + korreltextuur — full width via max-width override */
 .prd-dark-section {
+    max-width: 100% !important;
     background-color: #1e3528 !important;
     background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E"),
