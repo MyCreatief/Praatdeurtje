@@ -369,6 +369,13 @@ Text Domain:  flatsome-child
     border-top-color: #c9a98a;
 }
 
+/* Ruimte tussen de kaarten en vanaf de randen */
+.prd-dark-section.row {
+    gap: 16px;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+}
+
 /* Glaskaart per stap op donkere achtergrond */
 .prd-step-card {
     padding: 32px 24px 28px;
