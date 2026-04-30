@@ -369,11 +369,23 @@ Text Domain:  flatsome-child
     border-top-color: #c9a98a;
 }
 
-/* Kaarten gecentreerd en max ~980px breed — achtergrond blijft vol */
-/* Spacing tussen kaarten komt van col-inner padding (UX Builder), geen gap nodig */
+/* Gedeeld: centreren + achtergrond vol voor alle prd-dark-section rijen */
 .prd-dark-section.row {
     padding-left: max(24px, calc(50% - 490px)) !important;
     padding-right: max(24px, calc(50% - 490px)) !important;
+}
+
+/* Kaarten-rij: grid zodat gap correct werkt als gutter */
+.prd-dark-section.row:has(.prd-step-card) {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+/* Reset Flatsome's flex-kolom breedtes — niet nodig in grid context */
+.prd-dark-section.row:has(.prd-step-card) .col {
+    max-width: 100% !important;
+    width: 100% !important;
 }
 
 /* Glaskaart per stap op donkere achtergrond */
