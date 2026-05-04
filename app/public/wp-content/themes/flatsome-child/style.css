@@ -471,25 +471,41 @@ Text Domain:  flatsome-child
     margin: 0;
 }
 
-/* ── Meer van Mylene — projecten balk ───────────────────────────────────── */
+/* ── Meer van Mylene — projecten balk ─────────────────────────────────────
+   Subtiele parelmoer-gradient + zachte warm-bruine lijnen.            */
 .mylene-projects-bar {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0 40px;
+    gap: 0 44px;
     flex-wrap: wrap;
-    padding: 16px 24px;
-    background: #f4ede4 !important;
-    border-top: 2px solid #c9a98a;
+    padding: 18px 24px;
+    background:
+        radial-gradient(140% 90% at 50% 0%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 65%),
+        radial-gradient(110% 80% at 100% 100%, rgba(248,236,225,0.45) 0%, rgba(255,255,255,0) 70%),
+        #f4ede4 !important;
+    border-top: 1px solid rgba(150, 122, 94, 0.22);
+    border-bottom: 1px solid rgba(150, 122, 94, 0.10);
     font-size: 0.82em;
     line-height: 1.45;
+    position: relative;
+}
+.mylene-projects-bar::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #c9a98a 50%, transparent 100%);
 }
 .mylene-projects-label {
     font-weight: 700;
     color: #7b5c3e;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    font-size: 0.82em;
+    font-size: 0.78em;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -498,26 +514,32 @@ Text Domain:  flatsome-child
     flex-direction: column;
     text-decoration: none;
     color: inherit;
-    padding: 2px 0;
+    padding: 4px 6px;
     border-bottom: none !important;
+    border-radius: 6px;
+    transition: transform 0.18s ease, background 0.18s ease;
 }
 .mylene-project-link strong {
     color: #4b2e18;
     font-weight: 700;
+    transition: color 0.18s ease;
 }
 .mylene-project-link span {
     color: #8a7060;
 }
+.mylene-project-link:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.45);
+}
 .mylene-project-link:hover strong {
     color: #7b462b;
-    text-decoration: underline;
 }
 @media (max-width: 640px) {
     .mylene-projects-bar {
         flex-direction: column;
         align-items: center;
-        gap: 12px;
-        padding: 20px 20px;
+        gap: 14px;
+        padding: 22px 20px;
         text-align: center;
     }
 }

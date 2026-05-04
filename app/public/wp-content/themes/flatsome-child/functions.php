@@ -13,7 +13,7 @@ add_action('wp_enqueue_scripts', function () {
     );
 });
 
-// Meer van Mylene — zustersite-balk onderaan elke pagina
+// Meer van Mylene — zustersite-balk onderaan elke pagina (met UTM-tracking)
 add_action('wp_footer', function () {
     $all = array(
         'https://www.mycreatief.nl'   => array('MyCreatief.nl',   'Handgemaakte houten producten'),
@@ -27,9 +27,17 @@ add_action('wp_footer', function () {
     if (empty($others)) {
         return;
     }
+    // UTM-source = huidige site-host zonder www
+    $sourceHost = preg_replace('/^www\./', '', (string) parse_url($current, PHP_URL_HOST));
+    $sourceHost = $sourceHost ?: 'unknown';
     echo '<div class="mylene-projects-bar"><span class="mylene-projects-label">Meer van Mylene</span>';
     foreach ($others as $url => $info) {
-        echo '<a href="' . esc_url($url) . '" class="mylene-project-link" rel="noopener">'
+        $tracked = add_query_arg(array(
+            'utm_source'   => $sourceHost,
+            'utm_medium'   => 'footer-bar',
+            'utm_campaign' => 'meer-van-mylene',
+        ), $url);
+        echo '<a href="' . esc_url($tracked) . '" class="mylene-project-link" rel="noopener">'
             . '<strong>' . esc_html($info[0]) . '</strong>'
             . '<span>' . esc_html($info[1]) . '</span>'
             . '</a>';
