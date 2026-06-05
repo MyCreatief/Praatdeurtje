@@ -35,3 +35,5 @@ node_modules/
 # Ops — credentials en gegenereerde bundles nooit committen
 .ops/sync-remote.json
 .ops/sync-bundle.latest.json
+
+app/public/wp-content/ewww/
