@@ -2,8 +2,9 @@
 /**
  * Plugin Name: Praatdeurtje — dagelijkse slaapverhaaltjes (video + blog)
  * Description: Genereert elke dag een geïllustreerd slaapverhaaltje met Mosje in het Praatdeurtjesbos. Leest een vaste wereld-/karakterbijbel (pd_canon) zodat alles consistent blijft en meegroeit. gpt-4o verhaal (peuter/kleuter-taalniveau) -> 5 gpt-image-1 illustraties (echte JPEG) -> ElevenLabs voorleesstem -> Shotstack-video (16:9, ASYNC: insturen + later ophalen) -> blogpost in "Verhalen" -> YouTube (Gemaakt voor kinderen) + afspeellijst. Ruimt zware bestanden op na publicatie. State op blog 5; gedeelde keys op blog 7.
- * Version: 0.28.0
- * Changelog: 0.28.0 - Facebook-publishing (2026-06-09): per aflevering automatisch een link-post (blog + YouTube-link in tekst) en een aparte foto-post (kleurplaat) naar de Praatdeurtje-FB-pagina (id 1068983399642608). Nieuwe events PD_FB_STORY (+120s na blogpost) en PD_FB_COLORING (+30s na kleurplaat-toevoeging). Tokens via Instellingen -> Praatdeurtje FB (Page Token is permanent). Dubbel-post-bescherming via post-meta _pd_fb_posted / _pd_fb_coloring_posted.
+ * Version: 0.28.1
+ * Changelog: 0.28.1 - FB-backfill-knop (2026-06-09): admin-knop op Instellingen -> Praatdeurtje FB die alle al-gepubliceerde verhalen die nog geen FB-post hebben in een keer inplant (1 per 90s, oudste eerst). Veilig herhaalbaar via _pd_fb_posted-meta.
+ * 0.28.0 - Facebook-publishing (2026-06-09): per aflevering automatisch een link-post (blog + YouTube-link in tekst) en een aparte foto-post (kleurplaat) naar de Praatdeurtje-FB-pagina (id 1068983399642608). Nieuwe events PD_FB_STORY (+120s na blogpost) en PD_FB_COLORING (+30s na kleurplaat-toevoeging). Tokens via Instellingen -> Praatdeurtje FB (Page Token is permanent). Dubbel-post-bescherming via post-meta _pd_fb_posted / _pd_fb_coloring_posted.
  * 0.27.1 - taalregel (2026-06-09): 'wiebelt/wiebelen/gewiebel' op de vermijden-lijst (kwam te vaak voor, o.a. 3x in ep 12 Belle). Uitzondering: Bloempje het konijntje wiebelt zijn neusje — dat is zijn vaste karakter-trekje en blijft toegestaan.
  * 0.27.0 - geen dubbele personages in dezelfde scène (2026-06-09): pd_image_character_lock injecteert per scene een harde regel dat ELK met-naam-genoemd personage EXACTLY ONCE in het beeld voorkomt — geen dubbelganger, geen tweeling, geen reflectie als zelfde personage. Aanleiding: in ep 17 (Kwakkel) verscheen Kwakkel twee keer in één frame. Bestaande "exactly once"-regel zat alleen onder de pose-sheet-conditional; nu altijd-aan voor alle benoemde cast.
  * 0.26.0 - rustvideo's 3x/week (2026-06-09): naast zondag + woensdag 18:00 NL ook vrijdag 18:00 NL één rustvideo uit de wachtrij (derde weekly event pd_rustvideo_event_late). Voorraad 27 → 9 weken; herfst-materiaal moet in sept/okt gefilmd om naadloos te kunnen continueren.
@@ -3029,6 +3030,24 @@ function pd_fb_admin_page() {
         if (is_wp_error($r)) { echo '<div class="notice notice-error"><p>Test mislukt: ' . esc_html($r->get_error_message()) . '</p></div>'; }
         else { echo '<div class="notice notice-success"><p>Verbonden met pagina: <strong>' . esc_html((string) ($r['name'] ?? '?')) . '</strong> (id ' . esc_html((string) ($r['id'] ?? '?')) . ', ' . (int) ($r['fan_count'] ?? 0) . ' volgers).</p></div>'; }
     }
+    if (isset($_GET['pd_fb_backfill']) && check_admin_referer('pd_fb_backfill')) {
+        switch_to_blog(PD_BLOG);
+        $cat = get_category_by_slug('verhalen');
+        $q = new WP_Query(array(
+            'post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => -1,
+            'orderby' => 'date', 'order' => 'ASC',
+            'cat' => $cat ? (int) $cat->term_id : 0,
+            'meta_query' => array(array('key' => '_pd_fb_posted', 'compare' => 'NOT EXISTS')),
+        ));
+        $ids = wp_list_pluck($q->posts, 'ID');
+        restore_current_blog();
+        $offset = 60;
+        foreach ($ids as $pid) {
+            wp_schedule_single_event(time() + $offset, PD_FB_STORY, array(array('post_id' => (int) $pid, 'yt' => (string) get_post_meta($pid, '_pd_youtube_url', true))));
+            $offset += 90; // 90s tussen elke post
+        }
+        echo '<div class="notice notice-success"><p>Backfill ingepland: <strong>' . count($ids) . '</strong> verhalen (1 per 90s, eerste over 60s).</p></div>';
+    }
     $pid = esc_attr((string) pd_get('pd_fb_page_id'));
     $tok = esc_attr((string) pd_get('pd_fb_page_token'));
     echo '<div class="wrap"><h1>Praatdeurtje — Facebook-koppeling</h1>';
@@ -3041,6 +3060,9 @@ function pd_fb_admin_page() {
     submit_button('Opslaan');
     echo '</form>';
     $test_url = wp_nonce_url(add_query_arg('pd_fb_test', '1'), 'pd_fb_test');
-    echo '<p><a class="button" href="' . esc_url($test_url) . '">Test verbinding</a></p>';
+    $bf_url   = wp_nonce_url(add_query_arg('pd_fb_backfill', '1'), 'pd_fb_backfill');
+    echo '<p><a class="button" href="' . esc_url($test_url) . '">Test verbinding</a> ';
+    echo '<a class="button" href="' . esc_url($bf_url) . '" onclick="return confirm(\'Alle nog-niet-geposte verhalen naar Facebook duwen (1 per 90 seconden)?\')">Backfill: post oude verhalen</a></p>';
+    echo '<p class="description">Backfill plant alle al-gepubliceerde verhalen die nog geen FB-post hebben, met 90 seconden tussen elk. Veilig om vaker te draaien: posts met _pd_fb_posted-meta worden overgeslagen.</p>';
     echo '</div>';
 }
