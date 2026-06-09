@@ -125,3 +125,23 @@ add_action('wp_footer', function () {
     </script>
     <?php
 }, 50);
+
+// Volg-Mosje-balk — alleen op praatdeurtje.nl. Sober knopje boven de zustersite-balk.
+add_action('wp_footer', function () {
+    if (untrailingslashit((string) home_url()) !== 'https://www.praatdeurtje.nl') { return; }
+    if (is_admin()) { return; }
+    ?>
+    <style id="prd-follow-css">
+    .prd-follow-bar{display:flex;justify-content:center;gap:10px;padding:18px 16px 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    .prd-follow-bar a{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:#1877f2;color:#fff;border-radius:999px;text-decoration:none;font-weight:600;font-size:14px;box-shadow:0 2px 8px -2px rgba(24,119,242,.45);transition:transform .15s ease}
+    .prd-follow-bar a:hover{transform:translateY(-1px);color:#fff}
+    .prd-follow-bar svg{width:18px;height:18px;fill:currentColor}
+    </style>
+    <div class="prd-follow-bar">
+        <a href="https://www.facebook.com/1068983399642608" target="_blank" rel="noopener" aria-label="Volg Praatdeurtje op Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>
+            Volg op Facebook
+        </a>
+    </div>
+    <?php
+}, 1);
