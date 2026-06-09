@@ -40,6 +40,14 @@ jobs:
             php -l "$file"
           done
 
+      - name: Lint mu-plugin PHP
+        run: |
+          if [ -d app/public/wp-content/mu-plugins ]; then
+            find app/public/wp-content/mu-plugins -type f -name "*.php" -print0 | while IFS= read -r -d '' file; do
+              php -l "$file"
+            done
+          fi
+
       - name: Install deploy tooling
         run: |
           sudo apt-get update
@@ -73,3 +81,22 @@ jobs:
             --exclude-glob '.DS_Store' \
             app/public/wp-content/plugins/praatdeurtje-core /public_html/wp-content/plugins/praatdeurtje-core
           LFTP
+
+      - name: Deploy mu-plugins via SFTP (per file, geen --delete)
+        if: hashFiles('app/public/wp-content/mu-plugins/*.php') != ''
+        env:
+          LIVE_SFTP_HOST: ${{ secrets.LIVE_SFTP_HOST }}
+          LIVE_SFTP_PORT: ${{ secrets.LIVE_SFTP_PORT }}
+          LIVE_SFTP_USERNAME: ${{ secrets.LIVE_SFTP_USERNAME }}
+          LIVE_SFTP_PASSWORD: ${{ secrets.LIVE_SFTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          PUT_CMDS=""
+          for f in app/public/wp-content/mu-plugins/*.php; do
+            [ -f "$f" ] || continue
+            PUT_CMDS="${PUT_CMDS}put -O /public_html/wp-content/mu-plugins \"$f\"\n"
+          done
+          if [ -n "$PUT_CMDS" ]; then
+            printf "set sftp:auto-confirm yes\nset net:max-retries 2\nset net:timeout 20\n%b" "$PUT_CMDS" | \
+              lftp -u "$LIVE_SFTP_USERNAME","$LIVE_SFTP_PASSWORD" -p "$LIVE_SFTP_PORT" "sftp://$LIVE_SFTP_HOST"
+          fi
