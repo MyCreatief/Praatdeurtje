@@ -2,8 +2,24 @@
 /**
  * Plugin Name: Praatdeurtje — dagelijkse slaapverhaaltjes (video + blog)
  * Description: Genereert elke dag een geïllustreerd slaapverhaaltje met Mosje in het Praatdeurtjesbos. Leest een vaste wereld-/karakterbijbel (pd_canon) zodat alles consistent blijft en meegroeit. gpt-4o verhaal (peuter/kleuter-taalniveau) -> 5 gpt-image-1 illustraties (echte JPEG) -> ElevenLabs voorleesstem -> Shotstack-video (16:9, ASYNC: insturen + later ophalen) -> blogpost in "Verhalen" -> YouTube (Gemaakt voor kinderen) + afspeellijst. Ruimt zware bestanden op na publicatie. State op blog 5; gedeelde keys op blog 7.
- * Version: 0.28.1
- * Changelog: 0.28.1 - FB-backfill-knop (2026-06-09): admin-knop op Instellingen -> Praatdeurtje FB die alle al-gepubliceerde verhalen die nog geen FB-post hebben in een keer inplant (1 per 90s, oudste eerst). Veilig herhaalbaar via _pd_fb_posted-meta.
+ * Version: 0.38.0
+ * Changelog: 0.38.0 - langere verhalen (2026-06-22): 6 scènes (was 5) en target-woorden dynamisch uit $target (defaults 320 in arc-mode via pd_arc_target_words). Validatie accepteert 5–7 scènes. Admin-formulier toont 7 invulvelden.
+ * 0.37.3 - rustvideo-lock (2026-06-22): pd_rustvideo_publish krijgt een site-transient-lock (pd_rust_running, 30 min TTL) zodat parallelle cron-runs vanuit meerdere subsites niet meer hetzelfde bestand dubbel uploaden (zelfde bug als het Belle-incident v0.9.0 bij pd_run_daily).
+ * 0.37.2 - Nijntje-stijl: geen vast zinnenantal (2026-06-17): verwijderd "PRECIES 5 zinnen per scène" — Nijntje-stijl gaat over eenvoud en directe taal, niet een vast aantal. Anker is totaal 150-200 woorden voor de juiste speelduur.
+ * 0.37.1 - Nijntje-stijl bijgesteld (2026-06-16): 5 zinnen per scène (was 3) voor een speelduur van 1,5-2 minuten; max 8 woorden per zin, geen bijzinnen, totaal 150-200 woorden.
+ * 0.37.0 - Nijntje-schrijfstijl (2026-06-16): verhaalprompten herschreven naar Dick Bruna-stijl: precies 5 zinnen per scène, maximaal 8 woorden per zin (liever 5-6), geen bijzinnen, totaal 150-200 woorden. Muziekvolume verlaagd naar 0.03 (via WP-optie pd_soundtrack_volume). Admin-label bijgewerkt.
+ * 0.36.0 - EN bij hervatten (2026-06-16): pd_resume_stranded_unlocked genereert nu ook de Engelse vertaling, stem en Shotstack-render — identiek aan de normale dagelijkse run. Hierdoor mist de EN-aflevering niet meer als een run gestrande was.
+ * 0.35.0 - Pre-gegenereerde afbeeldingen (2026-06-16): als Codex tijdens het schrijven al 5 scene-JPEG's + thumbnail in uploads/praatdeurtje-videos/pre/<sanitize_title(titel)>/ heeft gezet, kopieert de plugin ze naar de run-map en slaat alle OpenAI image-calls over (kostenbesparing ~$0,40/aflevering). Terugval op gewone generatie als de map ontbreekt of incompleet is.
+ * 0.34.1 - Spotify-badge op de website (2026-06-15): "Luister op Spotify" knop met Spotify-logo onder elke verhalenblogpost (optie pd_spotify_url) + Spotify-link in de verhalen-categorie-banner naast de YouTube EN-link.
+ * 0.34.0 - Engelse podcast-feed (2026-06-15): ?pd_podcast_en=1 geeft een Engelstalige RSS-feed (Kids & Family / Stories for Kids) voor Spotify for Creators / Apple Podcasts. EN mp3 (voice-en-*.mp3) blijft bewaard op de server na YouTube-upload. pd_podcast_en_register() wordt aangeroepen vanuit zowel pd_finalize (inline EN-blok) als pd_en_finalize (aparte taak). YouTube-beschrijving EN vermeldt de podcast.
+ * 0.33.0 - Engelse variant (2026-06-15): zelfde 5 illustraties hergebruiken, Engelse GPT-4o-mini vertaling + ElevenLabs EN stem (pd_voice_id_en, standaard kLhAstPcnnPxqzk6gS5i) + aparte Shotstack-render -> YouTube afspeellijst "Mosje's Bedtime Stories" (pd_youtube_playlist_en, auto-aangemaakt). Engelse stappen mogen falen zonder de NL pipeline te raken. pd_en_pending voor afzonderlijke EN finalize als NL al klaar is maar EN render nog bezig. Beheer via Praatdeurtje > Engels (EN) in wp-admin.
+ * 0.32.1 - Shotstack-submit idempotent (2026-06-11): per aflevering krijgen de lange video en Short elk een atomische submit-claim. Parallelle cron- en herstelprocessen kunnen daardoor niet meer dezelfde render dubbel insturen; een reeds ontvangen render-id wordt bij een retry hergebruikt.
+ * 0.32.0 - begrijpelijke lessen (2026-06-11): lessen zijn concrete oorzaak-handeling-gevolg-situaties. Elk verhaal toont het lesje in drie zichtbare stappen en benoemt de kern eenmaal in een korte kindzin, zonder losse moraal.
+ * 0.31.1 - herstel-lock en cooldown (2026-06-11): slechts één proces mag een gestrande aflevering hervatten. API- en billingfouten zetten een cooldown, zodat cron niet telkens dezelfde betaalde beeldgeneratie opnieuw start.
+ * 0.31.0 - arc-deel = "een moment, geen dag" (2026-06-11): Mylene's feedback: in arc-mode voelde elke aflevering nog steeds als een hele mini-dag i.p.v. één moment uit een dag. Drie ingrepen, alleen in arc-mode (pd_arcs=1, default): (1) deel-prompts herschreven — ochtend/middag/avond beschrijven nu één rustig moment (geen doel, geen plan dat door 3 delen loopt, geen begin-midden-eind binnen één deel; verhaal mag in medias res beginnen en uitlopen). Deel 2 referreert niet meer terug ("eerder vandaag"-zin is weggehaald uit het in-verhaal-perspectief; chronologische volgorde leeft via de YT-playlist en het "Dit avontuur in delen"-blok). (2) OVERRIDE-blok in de user-prompt overschrijft het strikte verhaal-skelet uit v0.30: 'wens' = klein dingetje van nu, 'oplossing' = "het moment is voorbij", en de regel "hoofdwerkwoord in 3 van 5 scènes fysiek" wordt expliciet losgelaten. Bedtijd-afsluiting alleen nog in deel 3 (de avond). (3) Lager streefwoord-aantal in arc-mode (pd_arc_target_words, default 320 i.p.v. 480) — minder ruimte voor een mini-arc, meer ruimte voor sfeer. Zonder arc (pd_arcs=0) blijft het v0.30-skelet onveranderd. Cron blijft 1 video/dag om 17:00 NL.
+ * 0.30.0 - verhaal-skelet afgedwongen (2026-06-10): gpt-4o produceerde sfeerstukken zonder plot (bv. "vader vogel fluistert iets, er wordt een stipje getekend, in de regen"). Drie ingrepen: (1) JSON-schema krijgt verplichte velden 'wens' (1 concrete zin: wat wil de hoofdpersoon vandaag), 'hoofdwerkwoord' (uit toegestane lijst: zoeken/maken/geven/brengen/repareren/planten/bouwen/verstoppen/vinden/delen/leren/helpen/oversteken/vangen) en 'oplossing' (1 concrete zin: hoe komt het er uit in scène 5); voelen/horen/kijken/fluisteren/dromen/wensen/denken zijn UITgesloten als hoofdwerkwoord. (2) Verhaal-skelet-blok in de prompt eist dat de wens door alle 5 scènes loopt en in scène 5 vervuld wordt, en dat het hoofdwerkwoord in min. 3/5 scènes fysiek gebeurt. (3) pd_seizoen_weer() voegt nu "het weer is DECOR, geen ONDERWERP" toe. Arc-deelinstructies (ochtend/middag/avond) verwijzen nu expliciet naar het concrete plan dat door alle 3 delen loopt — middag = volgende stap, avond = afronding — zodat dag-avonturen niet meer in elkaar overlopen als sfeer. Het kalme einde (iedereen tevreden naar bed) blijft staan: dat blokkeert spanning, niet plot.
+ * 0.29.0 - schone dag-avontuur-titels (2026-06-10): " (deel X van 3: de Y)" wordt niet meer aan de post-titel geplakt. Alle 3 delen krijgen dezelfde basis-titel (Mosje zag dit als bug: leek rommelig in archief/feed). Het deel-nummer blijft volledig zichtbaar via het bestaande "Dit avontuur in delen"-blokje onder de post (post-meta pd_day_id/pd_part/pd_total). Bestaande titels opschonen via .ops/praatdeurtje-videos/cleanup-arc-titles.php (idempotent, draait WP-CLI op blog 5).
+ * 0.28.1 - FB-backfill-knop (2026-06-09): admin-knop op Instellingen -> Praatdeurtje FB die alle al-gepubliceerde verhalen die nog geen FB-post hebben in een keer inplant (1 per 90s, oudste eerst). Veilig herhaalbaar via _pd_fb_posted-meta.
  * 0.28.0 - Facebook-publishing (2026-06-09): per aflevering automatisch een link-post (blog + YouTube-link in tekst) en een aparte foto-post (kleurplaat) naar de Praatdeurtje-FB-pagina (id 1068983399642608). Nieuwe events PD_FB_STORY (+120s na blogpost) en PD_FB_COLORING (+30s na kleurplaat-toevoeging). Tokens via Instellingen -> Praatdeurtje FB (Page Token is permanent). Dubbel-post-bescherming via post-meta _pd_fb_posted / _pd_fb_coloring_posted.
  * 0.27.1 - taalregel (2026-06-09): 'wiebelt/wiebelen/gewiebel' op de vermijden-lijst (kwam te vaak voor, o.a. 3x in ep 12 Belle). Uitzondering: Bloempje het konijntje wiebelt zijn neusje — dat is zijn vaste karakter-trekje en blijft toegestaan.
  * 0.27.0 - geen dubbele personages in dezelfde scène (2026-06-09): pd_image_character_lock injecteert per scene een harde regel dat ELK met-naam-genoemd personage EXACTLY ONCE in het beeld voorkomt — geen dubbelganger, geen tweeling, geen reflectie als zelfde personage. Aanleiding: in ep 17 (Kwakkel) verscheen Kwakkel twee keer in één frame. Bestaande "exactly once"-regel zat alleen onder de pose-sheet-conditional; nu altijd-aan voor alle benoemde cast.
@@ -52,6 +68,7 @@ if (!defined('ABSPATH')) {
 
 const PD_CRON        = 'pd_daily_story';
 const PD_FINALIZE    = 'pd_finalize_event';
+const PD_EN_FINALIZE = 'pd_en_finalize_event';
 const PD_MAKE_REFS   = 'pd_make_refs_event';
 const PD_COLORING    = 'pd_coloring_event';
 const PD_BLOG        = 5;        // praatdeurtje.nl
@@ -155,6 +172,10 @@ add_action('init', function () {
         pd_podcast_feed();
         exit;
     }
+    if (isset($_GET['pd_podcast_en'])) { // Engelse podcast-feed (RSS)
+        pd_podcast_en_feed();
+        exit;
+    }
 });
 
 add_action(PD_CRON, 'pd_tegoed_alerts', 5); // eerst waarschuwen, dan draaien
@@ -244,11 +265,11 @@ add_action('init', function () {
     if (!defined('DOING_CRON') || !DOING_CRON) { return; }
     $s = pd_get('pd_stranded');
     if (is_array($s) && !empty($s['story']) && (time() - (int) ($s['time'] ?? 0)) > 600 && !pd_get('pd_pending')) {
-        pd_log('Zelfherstel: gestrande run "' . (string) ($s['story']['title'] ?? '?') . '" wordt automatisch hervat.');
-        pd_resume_stranded();
+        pd_resume_stranded(false);
     }
 }, 20);
 add_action(PD_FINALIZE, 'pd_finalize');
+add_action(PD_EN_FINALIZE, 'pd_en_finalize');
 add_action(PD_MAKE_REFS, 'pd_make_refs', 10, 1);
 add_action(PD_COLORING, 'pd_make_coloring', 10, 1);
 
@@ -499,37 +520,66 @@ function pd_run_daily(bool $manual = false) {
         for ($i = 0; $i < count($pre_jobs); $i += 2) { pd_make_refs(array_slice($pre_jobs, $i, 2)); }
     }
 
-    $images = array();
-    $qa_retries = 0; // max 2 herkansingen per aflevering (kostengrens)
-    foreach ($story['scenes'] as $i => $sc) {
-        $vd = is_array($sc['visual_direction'] ?? null) ? $sc['visual_direction'] : null;
-        $cp = is_array($sc['character_poses'] ?? null) ? $sc['character_poses'] : null;
-        $cast = pd_scene_cast((array) $sc);
-        $img = pd_generate_image($openai, (string) $sc['image'], $stamp, $i + 1, (string) ($sc['text'] ?? ''), (string) ($story['continuity'] ?? ''), $cast, $vd, $cp, (string) ($sc['indoor_place'] ?? ''));
-        if (is_wp_error($img)) { pd_log('Beeld-fout scene ' . ($i + 1) . ': ' . $img->get_error_message()); if (!$manual) { pd_set('pd_run_day', ''); } return $img; }
-        // v0.15: QA-check — harde fouten (dubbel personage, leesbare tekst, twee ballen) -> 1 herkansing
-        $check = pd_image_check($openai, (string) $img['local'], $cast[0]);
-        if (empty($check['ok']) && $qa_retries < 2) {
-            $qa_retries++;
-            pd_log('QA scene ' . ($i + 1) . ' afgekeurd (' . implode('; ', (array) $check['problems']) . ') — herkansing.');
-            $fix = '' !== (string) ($check['retry_direction'] ?? '') ? (' FIX THIS: ' . $check['retry_direction']) : '';
-            $img2 = pd_generate_image($openai, (string) $sc['image'] . $fix, $stamp, $i + 1, (string) ($sc['text'] ?? ''), (string) ($story['continuity'] ?? ''), $cast, $vd, $cp, (string) ($sc['indoor_place'] ?? ''));
-            // GEEN unlink: de herkansing schrijft naar hetzelfde bestand (zelfde stamp+nummer);
-            // unlinken verwijderde de nieuwe tekening (2026-06-06: Shotstack "File not found").
-            if (!is_wp_error($img2)) { $img = $img2; }
+    // v0.35: pre-gegenereerde afbeeldingen van Codex hergebruiken (sla OpenAI image-calls over)
+    $pre_slug = sanitize_title((string) ($story['title'] ?? ''));
+    $pre_dir  = PD_DIR . '/pre/' . $pre_slug;
+    $pre_used = false;
+    $images   = array();
+    if ('' !== $pre_slug && is_dir($pre_dir)) {
+        $pre_imgs = array();
+        for ($pi = 1; $pi <= 7; $pi++) {
+            $p   = $pre_dir . '/scene-' . $pi . '.jpg';
+            $dst = PD_DIR . '/scene-' . $stamp . '-' . $pi . '.jpg';
+            if (!file_exists($p) || !@copy($p, $dst)) { $pre_imgs = array(); break; }
+            $pre_imgs[] = array('local' => $dst, 'url' => PD_URL_BASE . basename($dst));
         }
-        $images[] = $img;
-        // visuele handtekening (compositie + pose hoofdpersonage) voor het anti-herhalingsgeheugen
-        $pose_sig = '';
-        if (is_array($cp) && !empty($cp[0]['name'])) { $pose_sig = '; ' . $cp[0]['name'] . ' ' . trim((string) ($cp[0]['view_angle'] ?? '') . ' ' . (string) ($cp[0]['pose'] ?? '')); }
-        if ($vd) { pd_visual_log_add((string) ($vd['composition_type'] ?? '?') . ': ' . (string) ($vd['character_placement'] ?? ($vd['main_visual_focus'] ?? '')) . $pose_sig); }
+        if (count($pre_imgs) === 5) {
+            $images = $pre_imgs; $pre_used = true;
+            pd_log('Pre-gegenereerde tekeningen van Codex gebruikt (' . $pre_slug . ').');
+        }
     }
-    pd_log('5 tekeningen klaar (JPEG)' . ($qa_retries ? " — {$qa_retries} QA-herkansing(en)" : '') . '.');
+
+    $qa_retries = 0;
+    if (!$pre_used) {
+        // max 2 herkansingen per aflevering (kostengrens)
+        foreach ($story['scenes'] as $i => $sc) {
+            $vd = is_array($sc['visual_direction'] ?? null) ? $sc['visual_direction'] : null;
+            $cp = is_array($sc['character_poses'] ?? null) ? $sc['character_poses'] : null;
+            $cast = pd_scene_cast((array) $sc);
+            $img = pd_generate_image($openai, (string) $sc['image'], $stamp, $i + 1, (string) ($sc['text'] ?? ''), (string) ($story['continuity'] ?? ''), $cast, $vd, $cp, (string) ($sc['indoor_place'] ?? ''));
+            if (is_wp_error($img)) { pd_log('Beeld-fout scene ' . ($i + 1) . ': ' . $img->get_error_message()); if (!$manual) { pd_set('pd_run_day', ''); } return $img; }
+            // v0.15: QA-check — harde fouten (dubbel personage, leesbare tekst, twee ballen) -> 1 herkansing
+            $check = pd_image_check($openai, (string) $img['local'], $cast[0]);
+            if (empty($check['ok']) && $qa_retries < 2) {
+                $qa_retries++;
+                pd_log('QA scene ' . ($i + 1) . ' afgekeurd (' . implode('; ', (array) $check['problems']) . ') — herkansing.');
+                $fix = '' !== (string) ($check['retry_direction'] ?? '') ? (' FIX THIS: ' . $check['retry_direction']) : '';
+                $img2 = pd_generate_image($openai, (string) $sc['image'] . $fix, $stamp, $i + 1, (string) ($sc['text'] ?? ''), (string) ($story['continuity'] ?? ''), $cast, $vd, $cp, (string) ($sc['indoor_place'] ?? ''));
+                // GEEN unlink: de herkansing schrijft naar hetzelfde bestand (zelfde stamp+nummer);
+                // unlinken verwijderde de nieuwe tekening (2026-06-06: Shotstack "File not found").
+                if (!is_wp_error($img2)) { $img = $img2; }
+            }
+            $images[] = $img;
+            // visuele handtekening (compositie + pose hoofdpersonage) voor het anti-herhalingsgeheugen
+            $pose_sig = '';
+            if (is_array($cp) && !empty($cp[0]['name'])) { $pose_sig = '; ' . $cp[0]['name'] . ' ' . trim((string) ($cp[0]['view_angle'] ?? '') . ' ' . (string) ($cp[0]['pose'] ?? '')); }
+            if ($vd) { pd_visual_log_add((string) ($vd['composition_type'] ?? '?') . ': ' . (string) ($vd['character_placement'] ?? ($vd['main_visual_focus'] ?? '')) . $pose_sig); }
+        }
+        pd_log('5 tekeningen klaar (JPEG)' . ($qa_retries ? " — {$qa_retries} QA-herkansing(en)" : '') . '.');
+    }
     $wip['images'] = $images; $wip['time'] = time(); pd_set('pd_stranded', $wip);
 
     // v0.13: thumbnail als aparte poster (mag falen zonder de run te raken)
+    // v0.35: pre-gegenereerde thumbnail hergebruiken indien beschikbaar
     $thumb = array();
-    if (is_array($story['thumbnail'] ?? null) && !empty($story['thumbnail']['main_focus'])) {
+    if ($pre_used && file_exists($pre_dir . '/thumbnail.jpg')) {
+        $dst_thumb = PD_DIR . '/thumb-' . $stamp . '.jpg';
+        if (@copy($pre_dir . '/thumbnail.jpg', $dst_thumb)) {
+            $thumb = array('local' => $dst_thumb, 'url' => PD_URL_BASE . basename($dst_thumb));
+            pd_log('Pre-gegenereerde thumbnail van Codex gebruikt.');
+        }
+    }
+    if (empty($thumb['local']) && is_array($story['thumbnail'] ?? null) && !empty($story['thumbnail']['main_focus'])) {
         $thumb = pd_generate_thumbnail($openai, (array) $story['thumbnail'], $stamp);
         if (is_wp_error($thumb)) { pd_log('Thumbnail-fout (gaat door met scène 1): ' . $thumb->get_error_message()); $thumb = array(); }
         else {
@@ -549,7 +599,7 @@ function pd_run_daily(bool $manual = false) {
     pd_set('pd_stranded', $wip);
 
     $env = pd_key('dhs_shotstack_env') ?: 'v1';
-    $render_id = pd_shotstack_submit($shot, $env, $story['title'], $images, $voice);
+    $render_id = pd_shotstack_submit($shot, $env, $story['title'], $images, $voice, $stamp);
     if (is_wp_error($render_id)) {
         // v0.15.1: assets bewaren bij render-fout (Shotstack-credits op, 2026-06-06:
         // twee complete runs verloren). Hervatten zonder nieuwe kosten:
@@ -565,8 +615,22 @@ function pd_run_daily(bool $manual = false) {
     }
 
     // Daarnaast een verticale Short (scène 1) — mag falen zonder de hoofdrun te raken.
-    $short_id = pd_shotstack_submit_short($shot, $env, $story['title'], $images, $voice);
+    $short_id = pd_shotstack_submit_short($shot, $env, $story['title'], $images, $voice, $stamp);
     if (is_wp_error($short_id)) { pd_log('Short-insturen mislukt (gaat door zonder): ' . $short_id->get_error_message()); $short_id = ''; }
+
+    // v0.33: Engelse variant — zelfde beelden, Engelse vertaling + stem + render (mag falen zonder NL te raken).
+    $en_render_id = ''; $en_story_out = array();
+    if (pd_en_enabled()) {
+        $en_t = pd_translate_en($openai, $story);
+        if (!is_wp_error($en_t)) {
+            $en_v = pd_elevenlabs_en($el_key, $en_t['scenes'], $stamp);
+            if (!is_wp_error($en_v)) {
+                $en_r = pd_shotstack_submit_en($shot, $env, $en_t['title'], $images, $en_v, $stamp);
+                if (!is_wp_error($en_r)) { $en_render_id = (string) $en_r; $en_story_out = $en_t; pd_log('Engelse render ingestuurd: ' . $en_render_id . '.'); }
+                else { pd_log('Engelse render mislukt (NL gaat door): ' . $en_r->get_error_message()); }
+            } else { pd_log('Engelse stem mislukt (NL gaat door): ' . $en_v->get_error_message()); }
+        } else { pd_log('Engelse vertaling mislukt (NL gaat door): ' . $en_t->get_error_message()); }
+    }
 
     // Fase A geslaagd — NU pas het wachtrij-item definitief verwijderen.
     if (!empty($story['_queue_title'])) {
@@ -575,7 +639,8 @@ function pd_run_daily(bool $manual = false) {
     }
 
     pd_set('pd_pending', array(
-        'render_id' => $render_id, 'short_render_id' => $short_id, 'env' => $env, 'ep' => $ep, 'stamp' => $stamp,
+        'render_id' => $render_id, 'short_render_id' => $short_id, 'en_render_id' => $en_render_id, 'en_story' => $en_story_out,
+        'env' => $env, 'ep' => $ep, 'stamp' => $stamp,
         'story' => $story, 'images' => $images, 'thumb' => $thumb,
         'voice_local' => $voice['local'], 'voice_duration' => (float) $voice['duration'], 'date' => $today(), 'attempts' => 0,
     ));
@@ -587,7 +652,56 @@ function pd_run_daily(bool $manual = false) {
 
 /* v0.15.1: gestrande run hervatten — alleen de render opnieuw insturen,
  * beelden/stem/thumbnail worden hergebruikt (geen nieuwe kosten). */
-function pd_resume_stranded() {
+function pd_resume_lock_acquire() {
+    $key = 'pd_resume_lock';
+    $now = time();
+    $old = pd_get($key);
+    if (is_array($old) && ($now - (int) ($old['time'] ?? 0)) > 1200) {
+        delete_option($key);
+    }
+    $token = wp_generate_uuid4();
+    return add_option($key, array('token' => $token, 'time' => $now), '', false) ? $token : '';
+}
+
+function pd_resume_lock_release(string $token): void {
+    $lock = pd_get('pd_resume_lock');
+    if (is_array($lock) && hash_equals((string) ($lock['token'] ?? ''), $token)) {
+        delete_option('pd_resume_lock');
+    }
+}
+
+function pd_resume_cooldown(string $message): void {
+    $lower = strtolower($message);
+    $seconds = (false !== strpos($lower, 'billing') || false !== strpos($lower, 'hard limit')) ? 3600 : 900;
+    pd_set('pd_resume_cooldown_until', time() + $seconds);
+}
+
+function pd_resume_stranded(bool $manual = true) {
+    $cooldown = (int) pd_get('pd_resume_cooldown_until', 0);
+    if (!$manual && $cooldown > time()) {
+        return array('cooldown' => $cooldown - time());
+    }
+    $token = pd_resume_lock_acquire();
+    if ('' === $token) {
+        return array('busy' => 'herstel is al bezig');
+    }
+    try {
+        if (!$manual) {
+            $stranded = pd_get('pd_stranded');
+            if (!is_array($stranded) || empty($stranded['story'])) {
+                return array('idle' => 'geen gestrande run');
+            }
+            pd_log('Zelfherstel: gestrande run "' . (string) ($stranded['story']['title'] ?? '?') . '" wordt automatisch hervat.');
+        }
+        $result = pd_resume_stranded_unlocked();
+        if (!empty($result['resumed'])) { pd_set('pd_resume_cooldown_until', 0); }
+        return $result;
+    } finally {
+        pd_resume_lock_release($token);
+    }
+}
+
+function pd_resume_stranded_unlocked() {
     @set_time_limit(900);
     @ignore_user_abort(true);
     $s = pd_get('pd_stranded');
@@ -607,7 +721,12 @@ function pd_resume_stranded() {
         $vd = is_array($sc['visual_direction'] ?? null) ? $sc['visual_direction'] : null;
         $cp = is_array($sc['character_poses'] ?? null) ? $sc['character_poses'] : null;
         $img = pd_generate_image($openai, (string) $sc['image'], $stamp, $i + 1, (string) ($sc['text'] ?? ''), (string) ($story['continuity'] ?? ''), pd_scene_cast((array) $sc), $vd, $cp, (string) ($sc['indoor_place'] ?? ''));
-        if (is_wp_error($img)) { pd_log('Hervatten: beeld ' . ($i + 1) . ' mislukt: ' . $img->get_error_message()); return array('error' => $img->get_error_message()); }
+        if (is_wp_error($img)) {
+            $message = $img->get_error_message();
+            pd_resume_cooldown($message);
+            pd_log('Hervatten: beeld ' . ($i + 1) . ' mislukt: ' . $message);
+            return array('error' => $message);
+        }
         $images[$i] = $img; $made[] = 'scène ' . ($i + 1);
         $s['images'] = $images; $s['time'] = time(); pd_set('pd_stranded', $s); // tussenstand bewaren
     }
@@ -620,20 +739,47 @@ function pd_resume_stranded() {
     if ('' === (string) $s['voice_local'] || !file_exists((string) $s['voice_local'])) {
         $el_key = (string) pd_key('dhs_elevenlabs_api_key');
         $v = pd_elevenlabs($el_key, (array) $story['scenes'], $stamp);
-        if (is_wp_error($v)) { pd_log('Hervatten: stem mislukt: ' . $v->get_error_message()); return array('error' => $v->get_error_message()); }
+        if (is_wp_error($v)) {
+            $message = $v->get_error_message();
+            pd_resume_cooldown($message);
+            pd_log('Hervatten: stem mislukt: ' . $message);
+            return array('error' => $message);
+        }
         $s['voice_url'] = $v['url']; $s['voice_local'] = $v['local']; $s['voice_duration'] = (float) $v['duration']; $s['scene_end'] = (array) $v['scene_end'];
         $made[] = 'stem';
         pd_set('pd_stranded', $s);
     }
     if ($made) { pd_log('Hervatten: bijgemaakt — ' . implode(', ', $made) . '.'); }
     $voice = array('url' => (string) $s['voice_url'], 'local' => (string) $s['voice_local'], 'duration' => (float) $s['voice_duration'], 'scene_end' => (array) $s['scene_end']);
-    $render_id = pd_shotstack_submit($shot, $env, (string) $story['title'], $images, $voice);
-    if (is_wp_error($render_id)) { pd_log('Hervatten mislukt (render): ' . $render_id->get_error_message()); return array('error' => $render_id->get_error_message()); }
-    $short_id = pd_shotstack_submit_short($shot, $env, (string) $story['title'], $images, $voice);
+    $render_id = pd_shotstack_submit($shot, $env, (string) $story['title'], $images, $voice, $stamp);
+    if (is_wp_error($render_id)) {
+        $message = $render_id->get_error_message();
+        pd_resume_cooldown($message);
+        pd_log('Hervatten mislukt (render): ' . $message);
+        return array('error' => $message);
+    }
+    $short_id = pd_shotstack_submit_short($shot, $env, (string) $story['title'], $images, $voice, $stamp);
     if (is_wp_error($short_id)) { $short_id = ''; }
+
+    // v0.36: EN ook bij hervatten (was eerder overgeslagen — zelfde blok als pd_run_daily).
+    $el_key = (string) pd_key('dhs_elevenlabs_api_key');
+    $en_render_id = ''; $en_story_out = array();
+    if (pd_en_enabled() && '' !== $el_key && '' !== $openai) {
+        $en_t = pd_translate_en($openai, $story);
+        if (!is_wp_error($en_t)) {
+            $en_v = pd_elevenlabs_en($el_key, $en_t['scenes'], $stamp);
+            if (!is_wp_error($en_v)) {
+                $en_r = pd_shotstack_submit_en($shot, $env, $en_t['title'], $images, $en_v, $stamp);
+                if (!is_wp_error($en_r)) { $en_render_id = (string) $en_r; $en_story_out = $en_t; pd_log('Engelse render ingestuurd (hervatten): ' . $en_render_id . '.'); }
+                else { pd_log('Engelse render mislukt (hervatten, gaat door): ' . $en_r->get_error_message()); }
+            } else { pd_log('Engelse stem mislukt (hervatten, gaat door): ' . $en_v->get_error_message()); }
+        } else { pd_log('Engelse vertaling mislukt (hervatten, gaat door): ' . $en_t->get_error_message()); }
+    }
+
     if (!empty($story['_queue_title'])) { pd_queue_remove((string) $story['_queue_title']); unset($story['_queue_title']); }
     pd_set('pd_pending', array(
-        'render_id' => $render_id, 'short_render_id' => $short_id, 'env' => $env, 'ep' => (int) $s['ep'], 'stamp' => (string) $s['stamp'],
+        'render_id' => $render_id, 'short_render_id' => $short_id, 'en_render_id' => $en_render_id, 'en_story' => $en_story_out,
+        'env' => $env, 'ep' => (int) $s['ep'], 'stamp' => (string) $s['stamp'],
         'story' => $story, 'images' => $images, 'thumb' => (array) ($s['thumb'] ?? array()),
         'voice_local' => $voice['local'], 'voice_duration' => $voice['duration'], 'date' => (string) $s['date'], 'attempts' => 0,
     ));
@@ -709,6 +855,31 @@ function pd_finalize() {
     }
 
     $post_id = pd_create_blog_post($story, $images, $final_url, $yt_id, $ep, (string) ($thumb['url'] ?? ''));
+    $post_id_int = is_wp_error($post_id) ? 0 : (int) $post_id;
+
+    // v0.33: Engelse YouTube-upload — na blogpost zodat we post_id in meta kunnen opslaan.
+    if (!empty($p['en_render_id']) && !empty($p['en_story'])) {
+        $enp = pd_shotstack_poll($shot, (string) $p['env'], (string) $p['en_render_id']);
+        if ('done' === $enp['status'] && '' !== $enp['url']) {
+            $en_local = PD_DIR . '/en-verhaal-' . $p['stamp'] . '.mp4';
+            if (pd_download($enp['url'], $en_local)) {
+                $en_yt = pd_post_youtube_en($en_local, (array) $p['en_story'], $ep);
+                if (is_wp_error($en_yt)) { pd_log('Engelse YT mislukt: ' . $en_yt->get_error_message()); }
+                else {
+                    pd_log('Engelse YT live: ' . $en_yt);
+                    if ($post_id_int) { switch_to_blog(PD_BLOG); update_post_meta($post_id_int, '_pd_youtube_en_url', (string) $en_yt); restore_current_blog(); }
+                    pd_podcast_en_register($ep, (array) $p['en_story'], (string) $p['stamp'], $post_id_int);
+                }
+                @unlink($en_local); // mp4 weg; voice-en-*.mp3 blijft voor de podcast-feed
+            }
+        } elseif ('failed' === $enp['status']) {
+            pd_log('Engelse render mislukt — overgeslagen.');
+        } else {
+            pd_set('pd_en_pending', array('render_id' => (string) $p['en_render_id'], 'env' => (string) $p['env'], 'story' => (array) $p['en_story'], 'ep' => $ep, 'stamp' => (string) $p['stamp'], 'post_id' => $post_id_int, 'attempts' => 0));
+            wp_schedule_single_event(time() + 90, PD_EN_FINALIZE);
+            pd_log('Engelse render nog bezig — aparte taak ingepland.');
+        }
+    }
 
     // Kleurplaat (lijntekening van scène 1) async toevoegen aan de post
     if (!is_wp_error($post_id) && $post_id && !empty($images[0]['local'])) {
@@ -730,6 +901,15 @@ function pd_finalize() {
     pd_append_story_log($ep, (string) $p['date'], $story);
     pd_set('pd_last_run', array('time' => gmdate('Y-m-d H:i:s') . 'Z', 'ep' => $ep, 'title' => $story['title'], 'video' => $final_url, 'youtube' => $yt, 'short' => is_string($short) ? $short : '', 'post_id' => is_wp_error($post_id) ? null : $post_id));
     pd_log(sprintf('Aflevering %d KLAAR: "%s" | post %s | yt %s', $ep, $story['title'], is_wp_error($post_id) ? 'FOUT' : $post_id, is_string($yt) ? $yt : 'n.v.t.'));
+
+    // TikTok direct publiceren vóór opruimen: PULL_FROM_URL vereist een actieve URL.
+    $tt_result = pd_post_tiktok($final_url, $story);
+    if (is_string($tt_result) && '' !== $tt_result) {
+        pd_log('TikTok live: ' . $tt_result);
+        if ($post_id_int) { switch_to_blog(PD_BLOG); update_post_meta($post_id_int, '_pd_tiktok_url', $tt_result); restore_current_blog(); }
+    } elseif (is_wp_error($tt_result)) {
+        pd_log('TikTok mislukt: ' . $tt_result->get_error_message());
+    }
 
     // opruimen: server slank houden. De voorlees-mp3 blijft BEWAARD voor de podcast-feed.
     pd_podcast_register($ep, $story, $p, is_wp_error($post_id) ? 0 : (int) $post_id);
@@ -801,6 +981,8 @@ add_action('admin_menu', function () {
     add_menu_page('Verhalen wachtrij', 'Verhalen wachtrij', 'manage_options', 'pd-wachtrij', 'pd_admin_queue_page', 'dashicons-book-alt', 26);
     add_submenu_page('pd-wachtrij', 'Wachtrij', 'Wachtrij', 'manage_options', 'pd-wachtrij', 'pd_admin_queue_page');
     add_submenu_page('pd-wachtrij', 'Personages & plekken', 'Personages', 'manage_options', 'pd-personages', 'pd_admin_canon_page');
+    add_submenu_page('pd-wachtrij', 'Engels (EN)', 'Engels (EN)', 'manage_options', 'pd-english', 'pd_admin_english_page');
+    add_submenu_page('pd-wachtrij', 'TikTok', 'TikTok', 'manage_options', 'pd-tiktok', 'pd_tt_admin_page');
 });
 
 /** Bouwt een wachtrij-item uit het formulier; behoudt onbekende velden uit $base. */
@@ -814,9 +996,10 @@ function pd_item_from_post(array $base = array()) {
     $date = trim((string) ($_POST['pd_date'] ?? ''));
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) { $item['date'] = $date; } else { unset($item['date']); }
     $scenes = array();
-    for ($i = 0; $i < 5; $i++) {
+    for ($i = 0; $i < 7; $i++) {
         $t = trim(sanitize_textarea_field(wp_unslash((string) ($_POST['pd_scene_text'][$i] ?? ''))));
         $im = trim(sanitize_textarea_field(wp_unslash((string) ($_POST['pd_scene_image'][$i] ?? ''))));
+        if ('' === $t && '' === $im) { continue; }
         if ('' === $t || '' === $im) { return new WP_Error('pd_form', sprintf('Scène %d is niet compleet (tekst én tekening-beschrijving zijn verplicht).', $i + 1)); }
         $scenes[] = array('text' => $t, 'image' => $im);
     }
@@ -936,9 +1119,9 @@ function pd_admin_queue_page() {
         $field('Samenvatting (1-2 zinnen, voor het archief en YouTube)', '<textarea name="pd_summary" rows="2" style="width:100%">' . esc_textarea((string) ($it['summary'] ?? '')) . '</textarea>');
         $field('Continuity — vaste details die in ALLE tekeningen gelijk blijven (Engels: kleur+aantal voorwerpen, seizoen, licht)', '<textarea name="pd_continuity" rows="2" style="width:100%" placeholder="one single small red ball; fresh green leaves; soft evening light">' . esc_textarea((string) ($it['continuity'] ?? '')) . '</textarea>');
         $scenes = is_array($it['scenes'] ?? null) ? array_values($it['scenes']) : array();
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 7; $i++) {
             echo '<fieldset style="border:1px solid #e5e5e5;border-radius:6px;padding:8px 12px;margin:10px 0"><legend style="font-weight:600">Scène ' . ($i + 1) . '</legend>';
-            $field('Verhaaltekst (NL, 6-9 korte zinnen)', '<textarea name="pd_scene_text[' . $i . ']" rows="4" style="width:100%">' . esc_textarea((string) ($scenes[$i]['text'] ?? '')) . '</textarea>');
+            $field('Verhaaltekst (NL — Nijntje-stijl, max 8 woorden per zin)', '<textarea name="pd_scene_text[' . $i . ']" rows="4" style="width:100%">' . esc_textarea((string) ($scenes[$i]['text'] ?? '')) . '</textarea>');
             $field('Tekening (korte Engelse beschrijving, geen tekst in beeld)', '<textarea name="pd_scene_image[' . $i . ']" rows="2" style="width:100%">' . esc_textarea((string) ($scenes[$i]['image'] ?? '')) . '</textarea>');
             echo '</fieldset>';
         }
@@ -983,7 +1166,7 @@ function pd_admin_queue_page() {
     }
     echo '</div>';
 
-    echo '<h2 style="margin-top:24px">➕ Nieuw verhaal</h2><div style="max-width:900px"><details><summary style="cursor:pointer;font-size:14px;padding:8px 12px;background:#f0f6fc;border:1px solid #dcdcde;border-radius:8px">Nieuw verhaal schrijven (5 scènes)</summary>';
+    echo '<h2 style="margin-top:24px">➕ Nieuw verhaal</h2><div style="max-width:900px"><details><summary style="cursor:pointer;font-size:14px;padding:8px 12px;background:#f0f6fc;border:1px solid #dcdcde;border-radius:8px">Nieuw verhaal schrijven (5–7 scènes)</summary>';
     $item_form(null, -1);
     echo '</details></div>';
 
@@ -1468,7 +1651,7 @@ function pd_seizoen_weer(): string {
         $map = array(0 => 'stralend zonnig', 1 => 'zonnig met een paar wolkjes', 2 => 'half bewolkt', 3 => 'bewolkt', 45 => 'mistig', 48 => 'mistig', 51 => 'een beetje miezerig', 53 => 'motregen', 55 => 'motregen', 61 => 'zachte regen', 63 => 'regenachtig', 65 => 'flinke regen', 71 => 'lichte sneeuw', 73 => 'sneeuw', 75 => 'veel sneeuw', 80 => 'af en toe een bui', 81 => 'buien', 82 => 'stevige buien', 95 => 'onweer in de verte');
         if (isset($map[$code])) { $weer = $map[$code] . ', rond ' . $temp . ' graden'; }
     }
-    $tekst = 'Het is ' . $seizoen . ' in Nederland' . ('' !== $weer ? (' en het weer vandaag is: ' . $weer) : '') . '. Laat het verhaal en de beelden hier zachtjes bij passen (seizoen klopt altijd; het weer mag je sprookjesachtig vertalen, niets engs van maken).';
+    $tekst = 'Het is ' . $seizoen . ' in Nederland' . ('' !== $weer ? (' en het weer vandaag is: ' . $weer) : '') . '. Laat het verhaal en de beelden hier zachtjes bij passen (seizoen klopt altijd; het weer mag je sprookjesachtig vertalen, niets engs van maken). Het weer is DECOR, geen ONDERWERP: laat het meebewegen in de scènes maar maak het nooit waar het verhaal over gaat. Een aflevering over de regen is geen verhaal; een aflevering waarin iemand een papieren bootje maakt en het in een plas laat varen, wel.';
     pd_set('pd_weer_vandaag', array('dag' => gmdate('Y-m-d'), 'tekst' => $tekst));
     return $tekst;
 }
@@ -1603,22 +1786,22 @@ function pd_cast_plan(int $epnum, string $dagdeel): array {
  * steeds hetzelfde zijn. Eigen lesjes bijzetten via optie pd_lessen_extra (array). */
 function pd_lessen_lijst(): array {
     $base = array(
-        'samen lief en vriendelijk zijn voor elkaar',
-        'iemand helpen die iets niet alleen kan',
-        'goed naar elkaar luisteren',
-        'samen delen, dan is er voor iedereen genoeg',
-        'sorry zeggen en het weer goedmaken',
-        'dankjewel zeggen en blij zijn met kleine dingen',
-        'geduld hebben en rustig wachten tot iets klaar is',
-        'samen opruimen en goed voor het bos en de dieren zorgen',
-        'nieuwsgierig zijn en gewoon vragen als je iets niet weet',
-        'een klein plantje of eigen groente laten groeien en er elke dag voor zorgen',
-        'leren wat een plant of bloem in het bos is en hoe die heet',
-        'leren welk klein bosdiertje dit is en hoe het leeft',
-        'in het donker niet bang hoeven zijn, want samen is het veilig',
-        'dat iedereen anders is en dat dat juist fijn is',
-        'iets eerst zelf proberen, ook als het moeilijk lijkt',
-        'zachtjes en voorzichtig doen met kleine, kwetsbare dingen',
+        'Vriendelijk zijn: iemand staat alleen of wil meedoen. Een vriendje maakt zichtbaar plaats en nodigt diegene uit. Daarna kunnen ze samen verder.',
+        'Helpen: iemand krijgt een concrete klus niet alleen voor elkaar. Een vriendje pakt één kant of doet één duidelijke stap mee. Daardoor lukt de klus wel.',
+        'Luisteren: iemand vertelt of laat zien wat er nodig is. Het andere vriendje stopt even, kijkt naar diegene en doet daarna precies wat gevraagd werd. Daardoor gaat het niet mis.',
+        'Delen: er is één ding voor meerdere vriendjes. De hoofdpersoon verdeelt het zichtbaar in stukjes of geeft het door. Daarna heeft iedereen iets.',
+        'Sorry zeggen: een personage doet per ongeluk iets vervelends. Diegene zegt kort sorry en herstelt de concrete schade. Daarna kunnen ze weer samen verder.',
+        'Dankjewel zeggen: iemand krijgt hulp of een klein cadeautje. Diegene zegt duidelijk dankjewel en laat zien wat de hulp mogelijk maakte.',
+        'Geduld: iets is nog niet klaar en te vroeg handelen zou het verstoren. De vriendjes wachten samen en kijken nog eens. Daarna is het wel klaar.',
+        'Opruimen: er ligt rommel die een dier of vriendje hindert. Iedereen pakt iets op en brengt het naar de goede plek. Daarna is de plek weer veilig en bruikbaar.',
+        'Een vraag stellen: een personage weet concreet niet wat iets is of hoe iets moet. Diegene vraagt het hardop. Een vriendje laat het antwoord zien en daarna kan de hoofdpersoon het zelf.',
+        'Voor een plant zorgen: een plantje mist zichtbaar water, licht of steun. De vriendjes geven precies wat nodig is. Later staat het plantje merkbaar steviger of frisser.',
+        'Een plant leren kennen: de vriendjes vinden één herkenbare plant. Ze benoemen de naam en één eenvoudig kenmerk dat ze kunnen zien, ruiken of voelen. Daarna herkennen ze dezelfde plant opnieuw.',
+        'Een bosdiertje leren kennen: de vriendjes zien één klein dier. Ze benoemen de naam en één eenvoudige manier waarop het dier leeft of beweegt. Daarna geven ze het dier rustig de ruimte.',
+        'Samen veilig in het donker: iets is moeilijk te zien. De vriendjes blijven bij elkaar en gebruiken een klein lichtje of elkaars hand. Daardoor vinden ze rustig hun weg.',
+        'Iedereen is anders: twee personages kunnen niet hetzelfde, maar ieder kan één andere concrete taak goed. Door die twee talenten te combineren lukt het samen.',
+        'Eerst zelf proberen: iets kleins lukt niet meteen. De hoofdpersoon probeert een tweede eenvoudige manier voordat hulp wordt gevraagd. Daardoor lukt één stap zelf.',
+        'Voorzichtig zijn: iets kleins of breekbaars kan beschadigen. De hoofdpersoon gebruikt twee handen, loopt langzaam of legt het zacht neer. Daardoor blijft het heel en veilig.',
     );
     foreach ((array) pd_get('pd_lessen_extra', array()) as $e) { $e = trim((string) $e); if ('' !== $e) { $base[] = $e; } }
     return array_values(array_unique($base));
@@ -1714,7 +1897,7 @@ function pd_generate_story(string $key, array $log) {
         // "Belle en de bal van Happy" zo twee keer ongepubliceerd verloren.
         $story['_queue_title'] = trim((string) ($story['title'] ?? ''));
         $scenes = is_array($story['scenes'] ?? null) ? array_values((array) $story['scenes']) : array();
-        if (is_array($story) && count($scenes) === 5) {
+        if (is_array($story) && count($scenes) >= 5 && count($scenes) <= 7) {
         $story['scenes'] = $scenes;
             $story['title']     = trim((string) ($story['title'] ?? 'Een verhaaltje uit het Praatdeurtjesbos'));
             $story['character'] = (string) ($story['character'] ?? 'Mosje');
@@ -1723,11 +1906,16 @@ function pd_generate_story(string $key, array $log) {
             pd_log('Verhaal uit wachtrij gebruikt: "' . $story['title'] . '".');
             return pd_clean_story($story);
         }
-        pd_log('Wachtrij-item ongeldig (geen 5 scènes) — terug naar auto-generatie.');
+        pd_log('Wachtrij-item ongeldig (verwacht 5–7 scènes) — terug naar auto-generatie.');
         }
     }
 
     $target = (int) (pd_get('pd_target_words') ?: PD_TARGET_WORDS);
+    // v0.30: arc-mode = "een moment" → korter verhaal (minder ruimte voor mini-arc)
+    if ('0' !== (string) pd_get('pd_arcs', '1')) {
+        $arc_target = (int) (pd_get('pd_arc_target_words') ?: 320);
+        if ($arc_target > 0) { $target = $arc_target; }
+    }
     $epnum = 1; foreach ($log as $e) { $epnum = max($epnum, (int) ($e['ep'] ?? 0) + 1); }
     $recent = array();
     foreach (array_slice($log, 0, 12) as $e) { $recent[] = '#' . ($e['ep'] ?? '?') . ' ' . ($e['title'] ?? '') . ' — ' . ($e['summary'] ?? ''); }
@@ -1737,17 +1925,32 @@ function pd_generate_story(string $key, array $log) {
         . "=== DE VASTE WERELD (blijf hier altijd consistent mee) ===\n" . pd_canon_text() . "\n"
         . "DOELGROEP: peuters en kleuters (2 t/m 6 jaar).\n"
         . "TAALREGELS (heel belangrijk):\n"
-        . "- Korte zinnen, één gedachte per zin.\n"
+        . "- NIJNTJE-STIJL: elke zin maximaal 8 woorden, liever 5 of 6. Geen bijzinnen (geen 'omdat', 'terwijl', 'zodat', 'waarna', 'die/dat'-constructies). Eén gedachte per zin. Denk aan Dick Bruna.\n"
         . "- Alleen alledaagse, eenvoudige woorden. Vermijd moeilijke/abstracte/formele woorden zoals 'melodie', 'betoverend', 'fascinerend', 'glooiend', 'geroezemoes', 'tafereel'. Gebruik gewone woorden: 'liedje', 'mooi', 'zacht', 'fijn', 'blij'.\n"
         . "- Vermijd 'wiebelt/wiebelen/gewiebel' (uitzondering: Bloempje het konijntje wiebelt zijn neusje — dat is zijn vaste trekje en mag).\n"
         . "- Veel zachte herhaling. Rustige, knusse toon. Geen spanning, niets engs of verdrietigs. Het einde is altijd kalm: iedereen gaat tevreden slapen.\n"
         . "- Hooguit één nieuw woordje per verhaal, en leg dat meteen in dezelfde zin uit.\n"
-        . "- Verwerk in elk verhaaltje één klein, zacht levenslesje (welk lesje krijg je in de opdracht hieronder), heel licht en vanzelfsprekend: laat de vriendjes het samen meemaken. Nooit een preek, geen losse moraal of 'en zo leerden ze dat...' aan het eind.\n"
+        . "- Verwerk in elk verhaaltje één klein levenslesje (welk lesje krijg je in de opdracht hieronder). Maak het begrijpelijk door oorzaak, handeling en zichtbaar gevolg te tonen. Nooit een preek of losse moraal aan het eind.\n"
         . "- Gebruik NOOIT gedachtestreepjes (— of –) of een los streepje tussen woorden. Schrijf gewoon met komma's en punten. Dat klinkt menselijker.\n"
-        . "VORM: precies 5 scènes. Elke scène 6 tot 9 korte zinnen. Het hele verhaal samen MINSTENS 350 woorden, streef naar ongeveer {$target} woorden — schrijf rustig en uitgebreid genoeg, zeker niet te kort. Elke aflevering staat op zichzelf.\n"
+        . "SCHRIJFSTIJL: Nijntje-stijl. Precies zoals Dick Bruna schrijft — heel eenvoudig, heel direct.\n"
+        . "- Elke zin: maximaal 8 woorden. Liever 5 of 6. Varieer vrij in aantal zinnen per scène.\n"
+        . "- Geen bijzinnen (geen 'omdat', 'terwijl', 'zodat', 'waarna', 'die/dat'-zinnen).\n"
+        . "- Geen beschrijvende uitweidingen. Schrijf wat er gebeurt, niet hoe het voelt of eruit ziet.\n"
+        . "- Totaal het hele verhaal: ongeveer {$target} woorden (plus of min 20). Dat geeft de juiste speelduur.\n"
+        . "Voorbeeld van de juiste toon: 'Mosje ziet een bolletje wol. Het rolt weg. Hij rent erachteraan. Maar het bolletje rolt steeds verder. Mosje hijgt en lacht tegelijk.'\n"
+        . "Elke aflevering staat op zichzelf.\n"
         . "Je mag bestaande personages en plekken uit de wereld gebruiken (consistent!), en je MAG een nieuw personage of een nieuwe plek introduceren. Doe je dat, beschrijf het dan kort in new_characters / new_places zodat we het onthouden voor later.\n\n"
+        . "VERHAAL-SKELET (verplicht, anders is het geen verhaal maar een sfeerstuk):\n"
+        . "- Elke aflevering heeft één kleine, CONCRETE wens of vraag van de hoofdpersoon — iets fysieks dat je kunt zien of doen (een papieren bootje maken, een gladde steen zoeken voor een vriendje, een paddenstoeltje verplaatsen, een liedje aan iemand leren, een verdwaalde knoop terugbrengen). NOOIT abstract ('iets begrijpen', 'een gevoel voelen', 'genieten van de regen').\n"
+        . "- Kies één hoofdwerkwoord uit deze lijst en laat dat in MINSTENS 4 van de 6 scènes echt fysiek gebeuren: zoeken, maken, geven, brengen, repareren, planten, bouwen, verstoppen, vinden, delen, leren (iets aan iemand), helpen (iets concreets), oversteken, vangen (een blad, een veertje). NIET als hoofdwerkwoord: voelen, horen, kijken, fluisteren, dromen, wensen, denken — die mogen wel in zinnen voorkomen, maar dragen het verhaal niet.\n"
+        . "- De wens loopt door alle 6 scènes en wordt in de laatste scène vervuld of opgelost. Geen wens, geen verhaal.\n"
+        . "- Het einde blijft kalm en slaperig (iedereen gaat tevreden naar bed) — dat blokkeert spanning, niet plot.\n\n"
         . "Geef ALLEEN JSON terug met exact deze velden: "
-        . "{\"title\": string (NL), \"character\": string (hoofdpersoon, meestal \"Mosje\"), \"summary\": string (1 NL zin voor het archief), \"elements\": string[], "
+        . "{\"title\": string (NL), \"character\": string (hoofdpersoon, meestal \"Mosje\"), \"summary\": string (1 NL zin voor het archief), "
+        . "\"wens\": string (1 NL zin: wat wil/zoekt/maakt/brengt de hoofdpersoon vandaag? Concreet, fysiek, met een ding of plek erin), "
+        . "\"hoofdwerkwoord\": string (één werkwoord uit de toegestane lijst), "
+        . "\"oplossing\": string (1 NL zin: hoe komt de wens er aan het eind van de laatste scène uit? Klein en concreet), "
+        . "\"elements\": string[], "
         . "\"new_characters\": [{\"name\": string, \"uiterlijk\": string (NL), \"uiterlijk_en\": string (KORTE Engelse visuele beschrijving voor de illustrator), \"woont\": string (NL), \"eigenschappen\": string (NL)}] (leeg [] als geen nieuw personage), "
         . "\"new_places\": [{\"name\": string, \"beschrijving\": string (NL), \"beschrijving_en\": string (KORTE Engelse visuele beschrijving voor de illustrator)}] (leeg [] als geen nieuwe plek), "
         . "\"continuity\": string (KORTE Engelse lijst met vaste visuele details die in ALLE scènes identiek moeten blijven: kleur van blaadjes/bloemen, seizoen, weer, tijd van de dag, en kleur+aantal van voorwerpen die in DIT verhaal voorkomen; bijv. \"fresh green spring leaves; soft late-afternoon light\". Noem UITSLUITEND dingen die echt in dit verhaal zitten; noem NOOIT spulletjes van personages die niet meespelen), "
@@ -1757,7 +1960,7 @@ function pd_generate_story(string $key, array $log) {
         . "\"places\": string[] (de plek(ken) uit de plekkenlijst die in deze scène in beeld zijn, exact gespeld; leeg [] als geen vaste plek), "
         . "\"indoor_place\": string (ALLEEN als deze scène zich BINNEN in een woonplek afspeelt: de naam van die plek, exact gespeld; anders weglaten of leeg laten), "
         . "\"visual_direction\": {\"composition_type\": string (kies uit: wide_location, closeup_object, character_closeup, over_the_shoulder, low_grass_view, top_down_map_like, doorway_view, action_diagonal, cozy_circle, hidden_peek, foreground_background_depth, tiny_character_big_world), \"main_visual_focus\": string (EN), \"camera_angle\": string (EN), \"shot_size\": string (EN), \"character_placement\": string (EN, waar staan de personages in het kader)}, "
-        . "\"character_poses\": [{\"name\": string (exact gespeld), \"view_angle\": string (EN, uit de toegestane poses/aanzichten van dat personage), \"pose\": string (EN), \"gesture\": string (EN), \"expression\": string (EN)}] (één per personage in characters)}] (precies 5)}.\n\n"
+        . "\"character_poses\": [{\"name\": string (exact gespeld), \"view_angle\": string (EN, uit de toegestane poses/aanzichten van dat personage), \"pose\": string (EN), \"gesture\": string (EN), \"expression\": string (EN)}] (één per personage in characters)}] (precies 6)}.\n\n"
         . "BEELDREGIE-REGELS (heel belangrijk voor variatie):\n"
         . "- Gebruik in één aflevering NOOIT twee keer hetzelfde visual_direction composition_type.\n"
         . "- Mosje staat NIET standaard links en een vriendje NIET standaard rechts; niet elke scène twee personages stil tegenover elkaar.\n"
@@ -1787,14 +1990,25 @@ function pd_generate_story(string $key, array $log) {
         $dd_cur = (string) $arc['daypart'];
         $les  = (string) $arc['lesson'];
         $cast_txt = '' !== ($arc['mandate'] ?? '') ? ("\n" . $arc['mandate']) : '';
+        // v0.30: elk deel = ÉÉN moment in een dag, geen mini-arc met doel/plan/oplossing.
+        // Het verhaaltje begint en eindigt midden in een rustig moment; geen klassiek
+        // begin/midden/eind. De grotere dag-boog leeft alleen in de drie titels samen
+        // en in het "Dit avontuur in delen"-blokje, niet in de spanningsboog binnen één deel.
         if (1 === $part) {
-            $deel_txt = "DIT IS HET BEGIN VAN EEN NIEUWE DAG IN HET BOS, de OCHTEND (deel 1 van 3). Zet een klein, rustig avontuurtje of vraagje op dat zich vandaag verder ontvouwt. Speel in zacht ochtendlicht. Eindig dit deel kalm, maar met een klein vooruitzicht: er valt vanmiddag nog iets te beleven.";
+            $deel_txt = "Dit verhaaltje speelt zich af op ÉÉN OCHTEND in het bos (deel 1 van 3 — alleen ter info, niet noemen in het verhaal). Schrijf één klein moment uit die ochtend: wat doen de vriendjes nu, hier, in het zachte ochtendlicht? Het is GEEN compleet verhaal met begin, midden en eind. Geen groot probleem, geen doel voor de hele dag en geen uitgesproken moraal. Wel mag één kleine handeling een direct, begrijpelijk gevolg hebben. Het mag halverwege beginnen, alsof we even komen kijken. Het eindigt ook gewoon, zonder grote afsluiting: de ochtend gaat door, ze blijven nog even verder doen wat ze deden.";
         } elseif (2 === $part) {
-            $deel_txt = "DIT IS DEEL 2 VAN 3, de MIDDAG van DEZELFDE dag. EERDER VANDAAG: " . (string) $arc['so_far'] . " Borduur hier rustig op voort; het avontuurtje gaat verder in de middag. Begin met EEN zachte zin die heel kort terugblikt op vanochtend, zodat een kind dat alleen dit deel ziet het ook snapt. Eindig weer kalm, met een klein vooruitzicht naar de avond.";
+            $deel_txt = "Dit verhaaltje speelt zich af op ÉÉN MIDDAG in het bos (deel 2 van 3 — alleen ter info, niet noemen in het verhaal). Schrijf één klein middag-moment: zelfde vriendjes, zelfde plek, zelfde sfeer als gisteren (cast en plek krijg je hieronder). Maar GEEN voortzetting van een 'plan' uit de ochtend — geen terugblik in het verhaal zelf (de kijker zag de ochtend gister/eergister en de chronologische volgorde leeft buiten het verhaal: in de YouTube-playlist en in het 'Dit avontuur in delen'-blok onder de post). Schrijf gewoon één rustig middag-moment dat op zichzelf staat: een kort klusje, een zacht spelletje, even zitten in de schaduw, iemand voorbij zien komen. GEEN compleet verhaal met probleem en oplossing.";
         } else {
-            $deel_txt = "DIT IS DEEL 3 VAN 3, de AVOND en het SLOT van de dag. EERDER VANDAAG: " . (string) $arc['so_far'] . " Begin met EEN zachte terugblikszin. Rond het avontuurtje nu zacht af en laat het lesje hier fijn en vanzelfsprekend landen. Eindig slaperig: iedereen gaat tevreden naar bed. In de avond mag de zingende nachtbloem zacht gloeien en haar liedje zingen.";
+            $deel_txt = "Dit verhaaltje speelt zich af op ÉÉN AVOND in het bos (deel 3 van 3 — alleen ter info, niet noemen in het verhaal). Schrijf één klein avond-moment: het wordt schemerig, de geluiden veranderen, sterren komen op. Geen terugblik in het verhaal zelf op ochtend of middag (die chronologie leeft buiten het verhaal). Geen 'plan dat eindelijk afgerond wordt' — gewoon één rustig moment in de avond (samen kijken naar de lucht, één laatste klein dingetje, een zachte ontmoeting). De zingende nachtbloem mag voorzichtig gloeien als het past. Het eindigt slaperig en zacht — de dag is gewoon op, de vriendjes drijven richting slaap.";
         }
-        $dagdeel_txt = "DAG-AVONTUUR (deel {$part} van 3): {$deel_txt} Houd dezelfde vriendjes, dezelfde hoofdrol en hetzelfde avontuur-draadje aan als in de rolverdeling hieronder; je mag binnen de dag wel zachtjes van plek wisselen in het bos. Het seizoen en het weer hierboven kloppen altijd.";
+        $dagdeel_txt = "MOMENT IN DE DAG (deel {$part} van 3): {$deel_txt}\n"
+            . "KERNREGEL: dit verhaaltje is een MOMENT, geen DAG. Geen begin-midden-eind in dit deel. Geen doel of plan dat in dit deel afgerond wordt. Eén rustige scène uit het bos die voorbijgaat. Houd dezelfde hoofdrol en vriendjes aan als in de rolverdeling hieronder; één plek (geen reis door het bos). Het seizoen en het weer hierboven kloppen altijd.\n"
+            . "OVERRIDE OP HET VERHAAL-SKELET (heel belangrijk — leest voor op de regels hierboven over wens/oplossing/hoofdwerkwoord):\n"
+            . "- 'wens' is hier GEEN groot doel voor de dag, maar één klein concreet dingetje dat ze nu in dit moment aan het doen zijn (een blaadje wegvegen, een veertje oprapen, een kruimel delen, naar iets kijken samen).\n"
+            . "- 'oplossing' is geen climax. Vul 'oplossing' in als één zin die laat zien dat het moment voorbij is, niet dat er iets opgelost is (bijv. 'ze blijven nog even zitten en luisteren naar het bos', of 'de wind draait en ze gaan rustig verder').\n"
+            . "- Het hoofdwerkwoord mag, maar de regel '4 van de 6 scènes' is hier LOSGELATEN: laat het werkwoord rustig voorkomen, niet als motor van het verhaal. Sfeer en kleine handelingen mogen hier de scènes dragen.\n"
+            . "- Schrijf rustig en kort. Liever 6 zachte scènes die niet 'ergens naartoe gaan' dan een mini-arc met opbouw en afronding.\n"
+            . "- Eindig in scène 6 NIET met 'iedereen gaat tevreden naar bed' tenzij dit deel 3 (de avond) is. In deel 1 en 2 loopt het moment gewoon zachtjes uit — de dag gaat door buiten beeld.";
     } else {
         list($dd_cur, $dd_next, $dd_prev) = pd_dagdeel_stap();
         $dagdeel_txt = "TIJD VAN DE DAG: het vorige verhaal speelde in de {$dd_prev}. Dit verhaal begint in de {$dd_cur} en mag in de loop van het verhaal zachtjes richting de {$dd_next} bewegen, alsof het bos gewoon doorleeft en elk verhaal het vorige opvolgt. Benoem het dagdeel en het licht in de scènes en in continuity. Het seizoen en het weer hierboven kloppen altijd. Het einde blijft kalm en slaperig, wat het dagdeel ook is.";
@@ -1802,7 +2016,13 @@ function pd_generate_story(string $key, array $log) {
         $cast_txt = '' !== ($cast_plan['mandate'] ?? '') ? ("\n" . $cast_plan['mandate']) : '';
         $les = pd_lesson_pick(); // v0.23: zacht lesje, rouleert
     }
-    $les_txt = '' !== $les ? ("\nKLEIN LESJE VANDAAG (verweef dit luchtig en heel natuurlijk in het avontuurtje, nooit belerend en geen losse moraal aan het eind): {$les}. De kinderen voelen het lesje door wat de vriendjes samen doen en meemaken, niet door uitleg.") : '';
+    $les_txt = '' !== $les ? ("\nKLEIN LESJE VANDAAG: {$les}\n"
+        . "MAAK DIT LESJE ZICHTBAAR EN BEGRIJPELIJK VOOR EEN KIND VAN 3 JAAR:\n"
+        . "1. Toon eerst concreet waarom de handeling nodig is.\n"
+        . "2. Laat een personage de bedoelde handeling echt uitvoeren, niet alleen voelen, kijken of erover denken.\n"
+        . "3. Toon direct wat er daardoor beter, makkelijker of fijner wordt.\n"
+        . "4. Laat precies één personage de kern benoemen in een natuurlijke zin van maximaal 8 woorden, bijvoorbeeld 'Jij mag ook een stukje' of 'Ik luister naar wat jij zegt'.\n"
+        . "Het lesje mag niet alleen in de titel, samenvatting, sfeer of laatste zin staan. Een kind moet na afloop kunnen zeggen: dit deed het vriendje, en daardoor gebeurde dat. Gebruik nooit de woorden 'de les', 'geleerd', 'belangrijk' of 'moraal'.") : '';
     if ($arcs_on && $part > 1) {
         $closing = "\nSchrijf dit deel verder in dezelfde stijl en sfeer; blijf trouw aan wat er eerder vandaag gebeurde en aan dezelfde vriendjes en plek.";
     } else {
@@ -1826,19 +2046,18 @@ function pd_generate_story(string $key, array $log) {
     pd_cost_add('episodes');
     $content = $data['choices'][0]['message']['content'] ?? '';
     $story = json_decode((string) $content, true);
-    if (!is_array($story) || empty($story['scenes']) || count($story['scenes']) !== 5) { return new WP_Error('pd_story_shape', 'Verhaal heeft geen 5 scènes.'); }
+    if (!is_array($story) || empty($story['scenes']) || count($story['scenes']) < 5 || count($story['scenes']) > 7) { return new WP_Error('pd_story_shape', 'Verhaal heeft geen 5–7 scènes.'); }
     $story['title'] = trim((string) ($story['title'] ?? 'Een avond in het Praatdeurtjesbos'));
     $story['character'] = (string) ($story['character'] ?? 'Mosje');
     $story['new_characters'] = is_array($story['new_characters'] ?? null) ? $story['new_characters'] : array();
     $story['new_places'] = is_array($story['new_places'] ?? null) ? $story['new_places'] : array();
     $story = pd_clean_story($story);
 
-    // v0.24: dag-avontuur — deel-titel (gedeelde basis + deelnummer, dash-vrij),
-    // arc-metadata voor de publicatiekant, en het geheugen bijwerken.
+    // v0.29: dag-avontuur — titel blijft schoon (zelfde basis voor alle 3 delen);
+    // het deel-nummer leeft alleen nog in post-meta + het "Dit avontuur in delen"-blokje.
     if ($arcs_on && !empty($arc)) {
-        $dl = array('ochtend', 'middag', 'avond');
         $base = (1 === $part) ? (string) $story['title'] : (string) ($arc['title_base'] ?: $story['title']);
-        $story['title'] = $base . ' (deel ' . $part . ' van 3: de ' . $dl[$part - 1] . ')';
+        $story['title'] = $base;
         $story['arc'] = array('day_id' => (int) $arc['day_id'], 'part' => $part, 'total' => 3, 'daypart' => $dd_cur);
         pd_arc_record($base, (string) ($story['summary'] ?? ''));
     }
@@ -2390,7 +2609,7 @@ function pd_openai_image(string $key, string $prompt, ?array $refs = null) {
 
 /* ---- 3) ElevenLabs voorleesstem (5 scènes, één call) + scène-eindtijden ---- */
 function pd_elevenlabs(string $key, array $scenes, string $stamp) {
-    $voice = (string) (pd_get('pd_voice_id') ?: 'JBFqnCBsd6RMkjVDRZzb'); // George
+    $voice = (string) (pd_get('pd_voice_id') ?: 'gCJROUe9eMZaWlhNj1z0');
     $texts = array(); foreach ($scenes as $sc) { $texts[] = trim((string) $sc['text']); }
     $joined = implode("\n\n", $texts);
     $resp = wp_remote_post('https://api.elevenlabs.io/v1/text-to-speech/' . $voice . '/with-timestamps', array(
@@ -2417,7 +2636,59 @@ function pd_elevenlabs(string $key, array $scenes, string $stamp) {
 }
 
 /* ---- 4) Shotstack: insturen + ophalen (gescheiden) ---- */
-function pd_shotstack_submit(string $key, string $env, string $title, array $images, array $voice) {
+function pd_shotstack_claim_name(string $kind, string $stamp): string {
+    return 'pd_shot_once_' . sanitize_key($kind) . '_' . substr(hash('sha256', $stamp), 0, 24);
+}
+
+function pd_shotstack_claim(string $kind, string $stamp) {
+    if ('' === $stamp) { return array('token' => ''); }
+    $name = pd_shotstack_claim_name($kind, $stamp);
+    $now = time();
+    $claim = get_option($name, null);
+    if (is_array($claim) && !empty($claim['render_id'])) {
+        return array('render_id' => (string) $claim['render_id']);
+    }
+    if (is_array($claim)) {
+        return new WP_Error('pd_render_busy', 'Deze Shotstack-render wordt al door een ander proces ingestuurd; geen tweede render gestart.');
+    }
+
+    $token = wp_generate_uuid4();
+    if (!add_option($name, array('token' => $token, 'time' => $now, 'kind' => $kind, 'stamp' => $stamp), '', false)) {
+        $claim = get_option($name, null);
+        if (is_array($claim) && !empty($claim['render_id'])) {
+            return array('render_id' => (string) $claim['render_id']);
+        }
+        return new WP_Error('pd_render_busy', 'Deze Shotstack-render wordt al door een ander proces ingestuurd; geen tweede render gestart.');
+    }
+    return array('token' => $token);
+}
+
+function pd_shotstack_claim_complete(string $kind, string $stamp, string $token, string $render_id): void {
+    if ('' === $stamp || '' === $token) { return; }
+    $name = pd_shotstack_claim_name($kind, $stamp);
+    $claim = get_option($name, null);
+    if (is_array($claim) && hash_equals((string) ($claim['token'] ?? ''), $token)) {
+        update_option($name, array('render_id' => $render_id, 'time' => time(), 'kind' => $kind, 'stamp' => $stamp), false);
+    }
+}
+
+function pd_shotstack_claim_release(string $kind, string $stamp, string $token): void {
+    if ('' === $stamp || '' === $token) { return; }
+    $name = pd_shotstack_claim_name($kind, $stamp);
+    $claim = get_option($name, null);
+    if (is_array($claim) && hash_equals((string) ($claim['token'] ?? ''), $token)) {
+        delete_option($name);
+    }
+}
+
+function pd_shotstack_submit(string $key, string $env, string $title, array $images, array $voice, string $stamp = '') {
+    $claim = pd_shotstack_claim('main', $stamp);
+    if (is_wp_error($claim)) { return $claim; }
+    if (!empty($claim['render_id'])) {
+        pd_log('Bestaande Shotstack-hoofdrender hergebruikt: ' . $claim['render_id'] . '.');
+        return (string) $claim['render_id'];
+    }
+    $claim_token = (string) ($claim['token'] ?? '');
     $base = 'https://api.shotstack.io/edit/' . $env;
     $music = (string) pd_get('pd_soundtrack_url');
     if ('' === $music) { $music = 'https://shotstack-assets.s3-ap-southeast-2.amazonaws.com/music/unminus/lit.mp3'; }
@@ -2449,14 +2720,27 @@ function pd_shotstack_submit(string $key, string $env, string $title, array $ima
     );
     $resp = wp_remote_post($base . '/render', array('timeout' => 60, 'headers' => array('x-api-key' => $key, 'Content-Type' => 'application/json'), 'body' => wp_json_encode($edit)));
     if (is_wp_error($resp)) { return $resp; }
+    $status = wp_remote_retrieve_response_code($resp);
+    if ($status < 200 || $status >= 300) {
+        pd_shotstack_claim_release('main', $stamp, $claim_token);
+        return new WP_Error('pd_render_http', 'Shotstack HTTP ' . $status . ': ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8'));
+    }
     $rid = json_decode(wp_remote_retrieve_body($resp), true)['response']['id'] ?? '';
     if ('' === $rid) { return new WP_Error('pd_render_submit', 'Geen render-id: ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8')); }
+    pd_shotstack_claim_complete('main', $stamp, $claim_token, (string) $rid);
     return (string) $rid;
 }
 /* Verticale Short (1080x1920): scène 1 beeld + scène 1 audio, max ~55s, titel-overlay. */
-function pd_shotstack_submit_short(string $key, string $env, string $title, array $images, array $voice) {
+function pd_shotstack_submit_short(string $key, string $env, string $title, array $images, array $voice, string $stamp = '') {
     if ('0' === (string) pd_get('pd_shorts')) { return new WP_Error('pd_short_off', 'Shorts staan uit (optie pd_shorts=0).'); }
     if (empty($images[0]['url'])) { return new WP_Error('pd_short_img', 'Geen scène 1 beeld.'); }
+    $claim = pd_shotstack_claim('short', $stamp);
+    if (is_wp_error($claim)) { return $claim; }
+    if (!empty($claim['render_id'])) {
+        pd_log('Bestaande Shotstack-Short hergebruikt: ' . $claim['render_id'] . '.');
+        return (string) $claim['render_id'];
+    }
+    $claim_token = (string) ($claim['token'] ?? '');
     $base = 'https://api.shotstack.io/edit/' . $env;
     $s1_end = isset($voice['scene_end'][0]) ? (float) $voice['scene_end'][0] : min(40.0, (float) $voice['duration']);
     $alen = min($s1_end, 55.0); // YouTube Short: ruim onder 60s blijven
@@ -2486,8 +2770,14 @@ function pd_shotstack_submit_short(string $key, string $env, string $title, arra
     );
     $resp = wp_remote_post($base . '/render', array('timeout' => 60, 'headers' => array('x-api-key' => $key, 'Content-Type' => 'application/json'), 'body' => wp_json_encode($edit)));
     if (is_wp_error($resp)) { return $resp; }
+    $status = wp_remote_retrieve_response_code($resp);
+    if ($status < 200 || $status >= 300) {
+        pd_shotstack_claim_release('short', $stamp, $claim_token);
+        return new WP_Error('pd_short_http', 'Shotstack HTTP ' . $status . ': ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8'));
+    }
     $rid = json_decode(wp_remote_retrieve_body($resp), true)['response']['id'] ?? '';
     if ('' === $rid) { return new WP_Error('pd_short_submit', 'Geen short-render-id: ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8')); }
+    pd_shotstack_claim_complete('short', $stamp, $claim_token, (string) $rid);
     return (string) $rid;
 }
 
@@ -2624,6 +2914,201 @@ function pd_post_youtube($local, array $story, int $ep, bool $short = false, str
 }
 
 /* ====================================================================
+ * ENGELSE VARIANT (v0.33) — zelfde beelden, Engelse tekst + stem + render
+ * Ingeschakeld zodra optie pd_voice_id_en gevuld is.
+ * ==================================================================== */
+function pd_en_enabled(): bool {
+    return '' !== (string) pd_get('pd_voice_id_en');
+}
+
+/** Vertaalt NL verhaal naar Engels via GPT-4o-mini (goedkoper dan 4o). */
+function pd_translate_en(string $openai, array $story) {
+    // Naam-mapping NL → EN uit de canon (optioneel veld name_en per personage).
+    $names = array('Mosje' => 'Mosje', 'Kwakkel de eend' => 'Quacky the duck', 'de zingende nachtbloem' => 'the singing nightflower');
+    foreach (pd_canon()['characters'] as $ch) {
+        if (!empty($ch['name']) && !empty($ch['name_en'])) { $names[(string) $ch['name']] = (string) $ch['name_en']; }
+    }
+    $name_map = '';
+    foreach ($names as $nl => $en) { $name_map .= "- {$nl} → {$en}\n"; }
+
+    $scene_texts = array();
+    foreach ((array) $story['scenes'] as $sc) { $scene_texts[] = (string) ($sc['text'] ?? ''); }
+
+    $prompt = "Translate this Dutch children's bedtime story to warm, natural English suitable for toddlers and preschoolers (ages 1–5). Keep the gentle, cozy bedtime tone. Character name translations (use the English names):\n{$name_map}\nReturn ONLY a valid JSON object with exactly these keys:\n- title: string\n- summary: string (1–2 sentences)\n- scenes: array of exactly 5 strings (translated scene texts, same order)\n\nDutch title: " . ($story['title'] ?? '') . "\nDutch summary: " . ($story['summary'] ?? '') . "\nDutch scenes:\n" . implode("\n---\n", $scene_texts);
+
+    $resp = wp_remote_post('https://api.openai.com/v1/chat/completions', array(
+        'timeout' => 60,
+        'headers' => array('Authorization' => 'Bearer ' . $openai, 'Content-Type' => 'application/json'),
+        'body' => wp_json_encode(array('model' => 'gpt-4o-mini', 'messages' => array(array('role' => 'user', 'content' => $prompt)), 'response_format' => array('type' => 'json_object'), 'temperature' => 0.3)),
+    ));
+    if (is_wp_error($resp)) { return $resp; }
+    if (200 !== wp_remote_retrieve_response_code($resp)) { return new WP_Error('pd_en_translate', 'OpenAI HTTP ' . wp_remote_retrieve_response_code($resp) . ': ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8')); }
+    $data = json_decode(wp_remote_retrieve_body($resp), true);
+    $raw  = json_decode((string) ($data['choices'][0]['message']['content'] ?? '{}'), true);
+    if (!is_array($raw) || empty($raw['title']) || !isset($raw['scenes'][4])) { return new WP_Error('pd_en_translate', 'Ongeldige vertaling: ' . mb_substr(wp_json_encode($raw), 0, 200, 'UTF-8')); }
+
+    // Bouw EN scène-array: behoud alle meta-velden, vervang alleen de tekst.
+    $en_scenes = array();
+    foreach ((array) $story['scenes'] as $i => $sc) {
+        $sc['text'] = (string) ($raw['scenes'][$i] ?? $scene_texts[$i]);
+        $en_scenes[] = $sc;
+    }
+    return array('title' => (string) $raw['title'], 'summary' => (string) ($raw['summary'] ?? ''), 'scenes' => $en_scenes);
+}
+
+/** ElevenLabs met de Engelse stem (pd_voice_id_en). */
+function pd_elevenlabs_en(string $key, array $scenes, string $stamp) {
+    $voice = (string) (pd_get('pd_voice_id_en') ?: 'kLhAstPcnnPxqzk6gS5i');
+    $texts = array(); foreach ($scenes as $sc) { $texts[] = trim((string) $sc['text']); }
+    $joined = implode("\n\n", $texts);
+    $resp = wp_remote_post('https://api.elevenlabs.io/v1/text-to-speech/' . $voice . '/with-timestamps', array(
+        'timeout' => 120, 'headers' => array('xi-api-key' => $key, 'Content-Type' => 'application/json'),
+        'body' => wp_json_encode(array('text' => $joined, 'model_id' => 'eleven_multilingual_v2', 'voice_settings' => array('stability' => 0.55, 'similarity_boost' => 0.8, 'style' => 0.2, 'use_speaker_boost' => true)), JSON_UNESCAPED_UNICODE),
+    ));
+    if (is_wp_error($resp)) { return $resp; }
+    if (200 !== wp_remote_retrieve_response_code($resp)) { return new WP_Error('pd_tts_en_http', 'ElevenLabs EN HTTP ' . wp_remote_retrieve_response_code($resp) . ': ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8')); }
+    $data = json_decode(wp_remote_retrieve_body($resp), true);
+    if (empty($data['audio_base64'])) { return new WP_Error('pd_tts_en_empty', 'Geen EN audio ontvangen.'); }
+    $fname = 'voice-en-' . $stamp . '.mp3';
+    file_put_contents(PD_DIR . '/' . $fname, base64_decode($data['audio_base64']));
+    $ends = $data['alignment']['character_end_times_seconds'] ?? array();
+    $total = !empty($ends) ? (float) end($ends) : 2.0;
+    $scene_end = array(); $cum = 0; $cnt = count($ends);
+    foreach ($texts as $i => $t) {
+        $cum += mb_strlen($t, 'UTF-8');
+        $idx = max(0, min($cum - 1, $cnt - 1));
+        $scene_end[$i] = !empty($ends) ? (float) $ends[$idx] : ($total * ($i + 1) / count($texts));
+        $cum += 2;
+    }
+    $scene_end[count($texts) - 1] = $total;
+    return array('url' => PD_URL_BASE . $fname, 'local' => PD_DIR . '/' . $fname, 'duration' => $total, 'scene_end' => $scene_end);
+}
+
+/** Shotstack-render met Engelse audio — zelfde beelden als NL, claim-naam 'en'. */
+function pd_shotstack_submit_en(string $key, string $env, string $title, array $images, array $voice, string $stamp = '') {
+    $claim = pd_shotstack_claim('en', $stamp);
+    if (is_wp_error($claim)) { return $claim; }
+    if (!empty($claim['render_id'])) { pd_log('Bestaande Engelse render hergebruikt: ' . $claim['render_id'] . '.'); return (string) $claim['render_id']; }
+    $claim_token = (string) ($claim['token'] ?? '');
+    $base = 'https://api.shotstack.io/edit/' . $env;
+    $music = (string) pd_get('pd_soundtrack_url');
+    if ('' === $music) { $music = 'https://shotstack-assets.s3-ap-southeast-2.amazonaws.com/music/unminus/lit.mp3'; }
+    $use_music = !in_array(strtolower($music), array('none', 'geen', '0'), true);
+    $dur = (float) $voice['duration']; $total = round($dur + PD_POST, 2);
+    $effects = array('zoomIn', 'slideLeft', 'zoomOut', 'slideRight', 'zoomIn');
+    $img_clips = array(); $prev = 0.0; $cnt = count($images);
+    foreach ($images as $i => $img) {
+        $end = isset($voice['scene_end'][$i]) ? (float) $voice['scene_end'][$i] : ($dur * ($i + 1) / $cnt);
+        $len = ($i === $cnt - 1) ? round($total - $prev, 2) : round($end - $prev, 2);
+        if ($len < 0.5) { $len = 0.5; }
+        $img_clips[] = array('asset' => array('type' => 'image', 'src' => $img['url']), 'start' => round($prev, 2), 'length' => $len, 'fit' => 'cover', 'effect' => $effects[$i % count($effects)], 'transition' => array('in' => 'fade', 'out' => 'fade'));
+        $prev = $end;
+    }
+    $title_css = "p{font-family:'Open Sans';color:#ffffff;font-size:64px;font-weight:700;text-align:center;line-height:1.25;margin:0;text-shadow:0 2px 12px rgba(0,0,0,0.55);}";
+    $title_clip = array('asset' => array('type' => 'html', 'html' => '<p>' . esc_html($title) . '</p>', 'css' => $title_css, 'width' => 1500, 'height' => 400, 'background' => 'transparent'), 'start' => 0.4, 'length' => 3.4, 'position' => 'center', 'transition' => array('in' => 'fade', 'out' => 'fade'));
+    $timeline = array(
+        'background' => '#fdfbf7',
+        'fonts' => array(array('src' => 'https://shotstack-assets.s3-ap-southeast-2.amazonaws.com/fonts/OpenSans-Bold.ttf')),
+        'tracks' => array(array('clips' => array($title_clip)), array('clips' => array(array('asset' => array('type' => 'audio', 'src' => $voice['url']), 'start' => PD_PRE, 'length' => round($dur, 2)))), array('clips' => $img_clips)),
+    );
+    if ($use_music) { $timeline['soundtrack'] = array('src' => $music, 'effect' => 'fadeOut', 'volume' => (float) (pd_get('pd_soundtrack_volume') ?: 0.03)); }
+    $edit = array('timeline' => $timeline, 'output' => array('format' => 'mp4', 'size' => array('width' => 1920, 'height' => 1080), 'fps' => 25, 'destinations' => array(array('provider' => 'shotstack', 'exclude' => true))));
+    $resp = wp_remote_post($base . '/render', array('timeout' => 60, 'headers' => array('x-api-key' => $key, 'Content-Type' => 'application/json'), 'body' => wp_json_encode($edit)));
+    if (is_wp_error($resp)) { pd_shotstack_claim_release('en', $stamp, $claim_token); return $resp; }
+    $status = wp_remote_retrieve_response_code($resp);
+    if ($status < 200 || $status >= 300) { pd_shotstack_claim_release('en', $stamp, $claim_token); return new WP_Error('pd_en_render_http', 'Shotstack EN HTTP ' . $status . ': ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8')); }
+    $rid = json_decode(wp_remote_retrieve_body($resp), true)['response']['id'] ?? '';
+    if ('' === $rid) { pd_shotstack_claim_release('en', $stamp, $claim_token); return new WP_Error('pd_en_render_submit', 'Geen EN render-id: ' . mb_substr(wp_remote_retrieve_body($resp), 0, 200, 'UTF-8')); }
+    pd_shotstack_claim_complete('en', $stamp, $claim_token, (string) $rid);
+    return (string) $rid;
+}
+
+/** YouTube-upload voor de Engelse video. Zelfde kanaal, afspeellijst "Mosje's Bedtime Stories". */
+function pd_post_youtube_en(string $local, array $en_story, int $ep) {
+    $refresh = (string) pd_get('dhs_pd_youtube_refresh_token');
+    if ('' === $refresh) { return new WP_Error('pd_yt_cfg', 'Geen YouTube-koppeling.'); }
+    $cid = (string) pd_key('dhs_youtube_client_id'); $sec = (string) pd_key('dhs_youtube_client_secret');
+    if ('' === $cid || '' === $sec) { return new WP_Error('pd_yt_cfg', 'Google client ontbreekt (blog 7).'); }
+    if (!file_exists($local)) { return new WP_Error('pd_yt_file', 'EN mp4 niet gevonden.'); }
+    $tk = wp_remote_post('https://oauth2.googleapis.com/token', array('timeout' => 60, 'body' => array('client_id' => $cid, 'client_secret' => $sec, 'refresh_token' => $refresh, 'grant_type' => 'refresh_token')));
+    if (is_wp_error($tk)) { return $tk; }
+    $at = json_decode(wp_remote_retrieve_body($tk), true)['access_token'] ?? '';
+    if ('' === $at) { return new WP_Error('pd_yt_token', 'Geen access-token (herautoriseren?).'); }
+    $title   = (string) ($en_story['title'] ?? 'Mosje');
+    $summary = (string) ($en_story['summary'] ?? '');
+    $yt_title = mb_substr($title . ' 🌙 Bedtime Story for Kids | Mosje', 0, 95, 'UTF-8');
+    $desc = 'A cozy bedtime story from the Little Door Forest. ' . rtrim($summary, '. ') . ". A gentle read-aloud story for bedtime.\n\n"
+        . "🌙 All bedtime stories: https://www.praatdeurtje.nl/category/verhalen/\n"
+        . "🚪 Who is Mosje? https://www.praatdeurtje.nl/wie-is-mosje/\n\n"
+        . "Praatdeurtje makes a new, gentle bedtime story every day: softly narrated, with sweet illustrations. Perfect for toddlers and preschoolers at bedtime.\n\n"
+        . "🎧 Also available as a podcast! Search for \"Mosje's Bedtime Stories\" on Spotify and Apple Podcasts.\n\n"
+        . "#bedtimestory #childrenstory #readaloud #sleepstory #kidsyoutube #Mosje #Praatdeurtje #toddler #preschool";
+    $snippet = array(
+        'snippet' => array('title' => $yt_title, 'description' => $desc, 'tags' => array('bedtime story', 'children story', 'read aloud', 'sleep story', 'kids stories', 'gnome', 'Mosje', 'Praatdeurtje', 'calming stories', 'toddler bedtime', 'preschool bedtime', 'fairy tale', 'goodnight story', 'Little Door Forest'), 'categoryId' => '24', 'defaultLanguage' => 'en', 'defaultAudioLanguage' => 'en'),
+        'status'  => array('privacyStatus' => (string) (pd_get('pd_yt_privacy') ?: 'public'), 'selfDeclaredMadeForKids' => true, 'embeddable' => true),
+    );
+    $size = (int) filesize($local);
+    $init = wp_remote_post('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', array(
+        'timeout' => 60, 'headers' => array('Authorization' => 'Bearer ' . $at, 'Content-Type' => 'application/json; charset=UTF-8', 'X-Upload-Content-Type' => 'video/mp4', 'X-Upload-Content-Length' => (string) $size), 'body' => wp_json_encode($snippet, JSON_UNESCAPED_UNICODE),
+    ));
+    if (is_wp_error($init)) { return $init; }
+    if ((int) wp_remote_retrieve_response_code($init) >= 300) { return new WP_Error('pd_yt_init', 'EN init HTTP ' . wp_remote_retrieve_response_code($init) . ': ' . mb_substr(wp_remote_retrieve_body($init), 0, 200, 'UTF-8')); }
+    $upload_url = (string) wp_remote_retrieve_header($init, 'location');
+    if ('' === $upload_url || !function_exists('curl_init')) { return new WP_Error('pd_yt_loc', 'geen upload-url of geen cURL'); }
+    $fh = fopen($local, 'rb'); $ch = curl_init($upload_url);
+    curl_setopt_array($ch, array(CURLOPT_PUT => true, CURLOPT_INFILE => $fh, CURLOPT_INFILESIZE => $size, CURLOPT_HTTPHEADER => array('Content-Type: video/mp4'), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 600));
+    $body = curl_exec($ch); $pcode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch); fclose($fh);
+    $pdata = json_decode((string) $body, true);
+    if ($pcode >= 300 || empty($pdata['id'])) { return new WP_Error('pd_yt_put', 'EN upload mislukt: ' . (is_array($pdata) ? ($pdata['error']['message'] ?? ('HTTP ' . $pcode)) : ('HTTP ' . $pcode))); }
+    $vid = (string) $pdata['id'];
+    // Afspeellijst "Mosje's Bedtime Stories" — auto-aanmaken bij eerste video.
+    $en_pl = (string) pd_get('pd_youtube_playlist_en');
+    if ('' === $en_pl) {
+        $cr = wp_remote_post('https://www.googleapis.com/youtube/v3/playlists?part=snippet,status', array('timeout' => 40, 'headers' => array('Authorization' => 'Bearer ' . $at, 'Content-Type' => 'application/json'), 'body' => wp_json_encode(array('snippet' => array('title' => "Mosje's Bedtime Stories", 'description' => "Gentle bedtime stories from the Little Door Forest, narrated in English. A new story every day — perfect for toddlers and preschoolers at bedtime."), 'status' => array('privacyStatus' => 'public')), JSON_UNESCAPED_UNICODE)));
+        if (!is_wp_error($cr) && (int) wp_remote_retrieve_response_code($cr) < 300) {
+            $en_pl = (string) (json_decode(wp_remote_retrieve_body($cr), true)['id'] ?? '');
+            if ('' !== $en_pl) { pd_set('pd_youtube_playlist_en', $en_pl); pd_log('Engelse afspeellijst aangemaakt: ' . $en_pl . '.'); }
+        }
+    }
+    if ('' !== $en_pl) {
+        wp_remote_post('https://www.googleapis.com/youtube/v3/playlistItems?part=snippet', array('timeout' => 40, 'headers' => array('Authorization' => 'Bearer ' . $at, 'Content-Type' => 'application/json'), 'body' => wp_json_encode(array('snippet' => array('playlistId' => $en_pl, 'resourceId' => array('kind' => 'youtube#video', 'videoId' => $vid), 'position' => 0)))));
+    }
+    return 'youtu.be/' . $vid;
+}
+
+/** Aparte finalize voor de Engelse render als die nog niet klaar was bij de NL finalize. */
+function pd_en_finalize(): void {
+    $p = pd_get('pd_en_pending');
+    if (!is_array($p) || empty($p['render_id'])) { return; }
+    $shot = (string) pd_key('dhs_shotstack_api_key');
+    $env  = (string) ($p['env'] ?? 'v1');
+    $poll = pd_shotstack_poll($shot, $env, (string) $p['render_id']);
+    if ('failed' === $poll['status']) { pd_log('Engelse render definitief mislukt.'); pd_set('pd_en_pending', ''); return; }
+    if ('done' !== $poll['status']) {
+        $p['attempts'] = (int) $p['attempts'] + 1;
+        if ($p['attempts'] > 10) { pd_log('Engelse render-timeout — opgegeven.'); pd_set('pd_en_pending', ''); return; }
+        pd_set('pd_en_pending', $p);
+        wp_schedule_single_event(time() + 60, PD_EN_FINALIZE);
+        return;
+    }
+    $ep    = (int) ($p['ep'] ?? 0);
+    $stamp = (string) ($p['stamp'] ?? '');
+    $en_local = PD_DIR . '/en-verhaal-' . $stamp . '.mp4';
+    if (pd_download($poll['url'], $en_local)) {
+        $en_yt = pd_post_youtube_en($en_local, (array) $p['story'], $ep);
+        if (is_wp_error($en_yt)) { pd_log('Engelse YT mislukt (aparte taak): ' . $en_yt->get_error_message()); }
+        else {
+            pd_log('Engelse YT live (aparte taak): ' . $en_yt);
+            $pid_int = (int) ($p['post_id'] ?? 0);
+            if ($pid_int) { switch_to_blog(PD_BLOG); update_post_meta($pid_int, '_pd_youtube_en_url', (string) $en_yt); restore_current_blog(); }
+            pd_podcast_en_register($ep, (array) $p['story'], $stamp, $pid_int);
+        }
+        @unlink($en_local); // mp4 weg; voice-en-*.mp3 blijft voor de podcast-feed
+    }
+    pd_set('pd_en_pending', '');
+}
+
+/* ====================================================================
  * RUSTVIDEO'S (v0.20) — wekelijkse publicatie van echte slomo-opnames
  * (deurtjes + natuur, op de laptop gemonteerd). Wachtrij: mp4-bestanden
  * in PD_DIR/rustvideos/, optioneel met gelijknamige .txt (regel 1 = titel,
@@ -2634,15 +3119,25 @@ function pd_post_youtube($local, array $story, int $ep, bool $short = false, str
 
 /** Publiceert de oudste rustvideo uit de wachtrij naar YouTube (+ eigen afspeellijst). */
 function pd_rustvideo_publish(): void {
+    // Eén-tegelijk-lock — zelfde bug als pd_run_daily (v0.9.0): de rustvideo-events
+    // staan op élke subsite gepland, en de cron-relay bedient ze allemaal. Zonder lock
+    // uploaden meerdere processen tegelijk hetzelfde bestand naar YouTube.
+    // Site-transient is netwerk-breed (werkt over alle blogs).
+    if (get_site_transient('pd_rust_running')) {
+        pd_log('Rustvideo overgeslagen: al een run actief (lock).');
+        return;
+    }
+    set_site_transient('pd_rust_running', 1, 30 * MINUTE_IN_SECONDS);
+
     $dir = PD_DIR . '/rustvideos';
-    if (!is_dir($dir)) { wp_mkdir_p($dir); return; }
+    if (!is_dir($dir)) { wp_mkdir_p($dir); delete_site_transient('pd_rust_running'); return; }
     // Alleen nog-niet-gepubliceerde video's; 'klaar-*' sorteert vóór 'rustvideo-*' (k<r)
     // en zou anders bij de volgende run opnieuw geüpload worden.
     $queue = array_values(array_filter(glob($dir . '/*.mp4') ?: array(), static function ($f) {
         return strpos(basename($f), 'klaar-') !== 0;
     }));
     sort($queue);
-    if (!$queue) { return; }
+    if (!$queue) { delete_site_transient('pd_rust_running'); return; }
     $local = $queue[0];
     $base  = basename($local, '.mp4');
 
@@ -2664,6 +3159,7 @@ function pd_rustvideo_publish(): void {
     $result = pd_post_youtube_rust($local, mb_substr($title, 0, 95, 'UTF-8'), $desc);
     if (is_wp_error($result)) {
         pd_log('Rustvideo mislukt (' . basename($local) . '): ' . $result->get_error_message() . ' — blijft in de wachtrij.');
+        delete_site_transient('pd_rust_running');
         return;
     }
     pd_set('pd_rust_count', $n);
@@ -2677,6 +3173,7 @@ function pd_rustvideo_publish(): void {
     @rename($local, $dir . '/klaar-' . gmdate('Ymd') . '-' . basename($local));
     if (file_exists($meta)) { @rename($meta, $dir . '/klaar-' . gmdate('Ymd') . '-' . basename($meta)); }
     pd_log('Rustvideo online: ' . $result . ' (' . basename($local) . '); nog ' . max(0, count($queue) - 1) . ' in de wachtrij.');
+    delete_site_transient('pd_rust_running');
 }
 
 /**
@@ -2837,6 +3334,57 @@ add_filter('the_content', function ($content) {
     return $content . $nav;
 }, 20);
 
+/* Spotify-badge + "Watch in English" blok onder elke verhalenblogpost (v0.33/0.34). */
+add_filter('the_content', function ($content) {
+    if (get_current_blog_id() !== PD_BLOG || !is_singular('post') || !in_the_loop() || !is_main_query()) { return $content; }
+    $extra = '';
+
+    // Spotify-badge — toont als pd_spotify_url gezet is (NL of EN show).
+    $sp_url = (string) pd_get('pd_spotify_url');
+    if ('' !== $sp_url) {
+        $extra .= '<div class="pd-spotify-link" style="margin:1.5em 0 0;padding:1em 1.4em;background:#f0faf4;border-radius:12px;border-left:4px solid #1DB954;display:flex;align-items:center;gap:0.9em">'
+                . '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#1DB954" style="flex-shrink:0"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.515 17.321a.75.75 0 0 1-1.031.249c-2.825-1.726-6.38-2.116-10.567-1.16a.75.75 0 1 1-.334-1.462c4.584-1.047 8.52-.596 11.683 1.342a.75.75 0 0 1 .249 1.031zm1.471-3.27a.937.937 0 0 1-1.288.308c-3.232-1.987-8.158-2.563-11.982-1.403a.938.938 0 0 1-.543-1.794c4.368-1.323 9.796-.682 13.505 1.601a.937.937 0 0 1 .308 1.288zm.127-3.407C15.28 8.55 9.108 8.35 5.55 9.418a1.125 1.125 0 1 1-.652-2.154c4.107-1.245 10.934-1.004 15.248 1.62a1.125 1.125 0 0 1-1.033 2.01z"/></svg>'
+                . '<span><strong style="display:block;margin-bottom:2px">Luister op Spotify</strong>'
+                . '<a href="' . esc_url($sp_url) . '" target="_blank" rel="noopener" style="color:#1a7a40;text-decoration:none">Mosje\'s Bedtime Stories — open in Spotify &#x2192;</a></span>'
+                . '</div>';
+    }
+
+    // "Watch in English" YouTube-blok.
+    $en_url = (string) get_post_meta((int) get_the_ID(), '_pd_youtube_en_url', true);
+    if ('' !== $en_url) {
+        $vid_id = ltrim(str_replace('youtu.be/', '', $en_url), '/');
+        $extra .= '<div class="pd-en-link" style="margin:1em 0 0;padding:1.1em 1.4em;background:#eef7f2;border-radius:12px;border-left:4px solid #5aaa80;display:flex;align-items:center;gap:0.9em">'
+                . '<span style="font-size:1.5em;flex-shrink:0">🌍</span>'
+                . '<span><strong style="display:block;margin-bottom:2px">Also available in English</strong>'
+                . '<a href="https://youtu.be/' . esc_attr($vid_id) . '" target="_blank" rel="noopener" style="color:#2a7a55;text-decoration:none">Watch this story in English on YouTube &#x2192;</a></span>'
+                . '</div>';
+    }
+
+    return '' !== $extra ? $content . $extra : $content;
+}, 25);
+
+/* Banner boven de verhalenlijst — Engelse YT-afspeellijst + Spotify (v0.33/0.34). */
+add_action('loop_start', function ($query) {
+    if (get_current_blog_id() !== PD_BLOG || !$query->is_main_query() || !is_category('verhalen')) { return; }
+    $en_pl  = (string) pd_get('pd_youtube_playlist_en');
+    $sp_url = (string) pd_get('pd_spotify_url');
+    if ('' === $en_pl && '' === $sp_url) { return; }
+    $links = '';
+    if ('' !== $en_pl) {
+        $pl_url = 'https://www.youtube.com/playlist?list=' . rawurlencode($en_pl);
+        $links .= '<a href="' . esc_url($pl_url) . '" target="_blank" rel="noopener" style="color:#2a7a55;white-space:nowrap">&#x25B6; Watch on YouTube</a>';
+    }
+    if ('' !== $sp_url) {
+        if ('' !== $links) { $links .= ' &nbsp;·&nbsp; '; }
+        $links .= '<a href="' . esc_url($sp_url) . '" target="_blank" rel="noopener" style="color:#1a7a40;white-space:nowrap">&#127925; Listen on Spotify</a>';
+    }
+    echo '<div class="pd-en-banner" style="margin:0 0 2em;padding:1.1em 1.5em;background:#eef7f2;border-radius:14px;border-left:4px solid #5aaa80;display:flex;align-items:center;gap:1em">'
+       . '<span style="font-size:1.6em;flex-shrink:0">🌍</span>'
+       . '<span><strong>Also available in English!</strong> Mosje\'s bedtime stories are now narrated in English too. '
+       . $links . '</span>'
+       . '</div>';
+});
+
 /* ====================================================================
  * 7) PODCAST — de voorlees-mp3 blijft bewaard; ?pd_podcast=1 geeft een
  * RSS-feed die je gratis aanmeldt bij Spotify (for Creators) / Apple.
@@ -2882,6 +3430,82 @@ function pd_podcast_feed(): void {
     $out .= '<link>' . $e($site) . '</link>' . "\n";
     $out .= '<atom:link href="' . $e($site . '/?pd_podcast=1') . '" rel="self" type="application/rss+xml" />' . "\n";
     $out .= '<language>nl</language>' . "\n";
+    $out .= '<description>' . $e($desc) . '</description>' . "\n";
+    $out .= '<itunes:author>Praatdeurtje</itunes:author>' . "\n";
+    $out .= '<itunes:summary>' . $e($desc) . '</itunes:summary>' . "\n";
+    $email = (string) (pd_get('pd_podcast_email') ?: 'myklijn@gmail.com');
+    $out .= '<itunes:owner><itunes:name>Praatdeurtje</itunes:name><itunes:email>' . $e($email) . '</itunes:email></itunes:owner>' . "\n";
+    $out .= '<managingEditor>' . $e($email) . ' (Praatdeurtje)</managingEditor>' . "\n";
+    $out .= '<itunes:image href="' . $e($cover) . '" />' . "\n";
+    $out .= '<itunes:category text="Kids &amp; Family"><itunes:category text="Stories for Kids" /></itunes:category>' . "\n";
+    $out .= '<itunes:explicit>false</itunes:explicit>' . "\n";
+    foreach ($items as $it) {
+        $link = ((int) ($it['post_id'] ?? 0) > 0) ? get_blog_permalink(PD_BLOG, (int) $it['post_id']) : $site;
+        if (!$link) { $link = $site; }
+        $out .= "<item>\n";
+        $out .= '<title>' . $e($it['title'] ?? '') . '</title>' . "\n";
+        $out .= '<description>' . $e($it['summary'] ?? '') . '</description>' . "\n";
+        $out .= '<link>' . $e($link) . '</link>' . "\n";
+        $out .= '<guid isPermaLink="false">' . $e($it['mp3'] ?? '') . '</guid>' . "\n";
+        $out .= '<pubDate>' . $e($it['date'] ?? '') . '</pubDate>' . "\n";
+        $out .= '<enclosure url="' . $e($it['mp3'] ?? '') . '" length="' . (int) ($it['bytes'] ?? 0) . '" type="audio/mpeg" />' . "\n";
+        if (!empty($it['duration'])) { $out .= '<itunes:duration>' . (int) $it['duration'] . '</itunes:duration>' . "\n"; }
+        $out .= '<itunes:explicit>false</itunes:explicit>' . "\n";
+        $out .= "</item>\n";
+    }
+    $out .= "</channel>\n</rss>\n";
+    echo $out; // phpcs:ignore WordPress.Security.EscapeOutput
+}
+
+/* ====================================================================
+ * 7b) ENGELSE PODCAST — ?pd_podcast_en=1 (RSS voor Spotify / Apple Podcasts).
+ * De Engelse mp3 (voice-en-*.mp3) blijft op de server na de YouTube-upload.
+ * Aanmelden: Spotify for Creators → https://podcasters.spotify.com/ → RSS-feed.
+ * ==================================================================== */
+function pd_podcast_en_items(): array {
+    $raw = pd_get('pd_podcast_en_items', '');
+    $items = is_array($raw) ? $raw : json_decode((string) $raw, true);
+    return is_array($items) ? $items : array();
+}
+
+function pd_podcast_en_register(int $ep, array $en_story, string $stamp, int $post_id): void {
+    if ('' === $stamp) { return; }
+    $local = PD_DIR . '/voice-en-' . $stamp . '.mp3';
+    if (!file_exists($local)) { pd_log('EN podcast-mp3 niet gevonden voor ep ' . $ep . ' (stamp ' . $stamp . ') — overgeslagen.'); return; }
+    $items = pd_podcast_en_items();
+    foreach ($items as $it) { if ((int) ($it['ep'] ?? 0) === $ep) { return; } } // niet dubbel
+    array_unshift($items, array(
+        'ep'       => $ep,
+        'title'    => (string) ($en_story['title'] ?? 'Mosje ep ' . $ep),
+        'summary'  => (string) ($en_story['summary'] ?? ''),
+        'mp3'      => PD_URL_BASE . 'voice-en-' . $stamp . '.mp3',
+        'bytes'    => (int) (@filesize($local) ?: 0),
+        'duration' => (int) round((float) ($en_story['duration'] ?? 0)),
+        'date'     => gmdate('D, d M Y H:i:s') . ' +0000',
+        'post_id'  => $post_id,
+        'stamp'    => $stamp,
+    ));
+    pd_set('pd_podcast_en_items', wp_json_encode(array_slice($items, 0, 400), JSON_UNESCAPED_UNICODE));
+    pd_log('Engelse podcast-aflevering geregistreerd: ep ' . $ep . '.');
+}
+
+function pd_podcast_en_feed(): void {
+    if (function_exists('nocache_headers')) { nocache_headers(); }
+    if (function_exists('wp_cache_set_no_cache_flag')) { wp_cache_set_no_cache_flag(true); }
+    if (defined('DONOTCACHEPAGE') === false) { define('DONOTCACHEPAGE', true); }
+    $items = pd_podcast_en_items();
+    $site  = 'https://www.praatdeurtje.nl';
+    $cover = PD_URL_BASE . 'podcast-cover-en.png';
+    if (!file_exists(PD_DIR . '/podcast-cover-en.png')) { $cover = PD_URL_BASE . 'podcast-cover.png'; }
+    $desc  = "A new gentle bedtime story from the Little Door Forest every day, narrated in English. Join Mosje the little gnome and his friends on cozy adventures. Perfect for toddlers and preschoolers at bedtime.";
+    $e = function ($s) { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); };
+    header('Content-Type: application/rss+xml; charset=utf-8');
+    $out  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $out .= '<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:atom="http://www.w3.org/2005/Atom">' . "\n<channel>\n";
+    $out .= '<title>Mosje\'s Bedtime Stories</title>' . "\n";
+    $out .= '<link>' . $e($site) . '</link>' . "\n";
+    $out .= '<atom:link href="' . $e($site . '/?pd_podcast_en=1') . '" rel="self" type="application/rss+xml" />' . "\n";
+    $out .= '<language>en</language>' . "\n";
     $out .= '<description>' . $e($desc) . '</description>' . "\n";
     $out .= '<itunes:author>Praatdeurtje</itunes:author>' . "\n";
     $out .= '<itunes:summary>' . $e($desc) . '</itunes:summary>' . "\n";
@@ -3065,4 +3689,306 @@ function pd_fb_admin_page() {
     echo '<a class="button" href="' . esc_url($bf_url) . '" onclick="return confirm(\'Alle nog-niet-geposte verhalen naar Facebook duwen (1 per 90 seconden)?\')">Backfill: post oude verhalen</a></p>';
     echo '<p class="description">Backfill plant alle al-gepubliceerde verhalen die nog geen FB-post hebben, met 90 seconden tussen elk. Veilig om vaker te draaien: posts met _pd_fb_posted-meta worden overgeslagen.</p>';
     echo '</div>';
+}
+
+/* ====================================================================
+ * ADMINPAGINA "Engels (EN)" — stem, afspeellijst en naam-vertalingen
+ * ==================================================================== */
+function pd_admin_english_page(): void {
+    if (!current_user_can('manage_options')) { return; }
+    if (isset($_POST['pd_en_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash((string) $_POST['pd_en_nonce'])), 'pd_en_save')) {
+        pd_set('pd_voice_id_en',       sanitize_text_field(wp_unslash((string) ($_POST['pd_voice_id_en'] ?? ''))));
+        pd_set('pd_youtube_playlist_en', sanitize_text_field(wp_unslash((string) ($_POST['pd_youtube_playlist_en'] ?? ''))));
+        // Naam-EN per personage opslaan in de canon
+        $canon = pd_canon();
+        $names_en = (array) ($_POST['pd_char_name_en'] ?? array());
+        foreach ($canon['characters'] as $i => $ch) {
+            $slug = pd_slugify((string) ($ch['name'] ?? ''));
+            if (isset($names_en[$slug])) { $canon['characters'][$i]['name_en'] = sanitize_text_field(wp_unslash((string) $names_en[$slug])); }
+        }
+        pd_canon_save($canon);
+        echo '<div class="notice notice-success"><p>Instellingen opgeslagen.</p></div>';
+    }
+    $voice_en = esc_attr((string) pd_get('pd_voice_id_en'));
+    $pl_en    = esc_attr((string) pd_get('pd_youtube_playlist_en'));
+    $canon    = pd_canon();
+    echo '<div class="wrap"><h1>Praatdeurtje — Engels (EN)</h1>';
+    echo '<p>Elke aflevering krijgt automatisch een Engelse variant op YouTube (zelfde illustraties, Engelse vertaling + stem). Laat het voice-veld leeg om de Engelse variant uit te zetten.</p>';
+    echo '<form method="post"><table class="form-table">';
+    echo '<tr><th>ElevenLabs voice-ID (EN)</th><td><input type="text" name="pd_voice_id_en" value="' . $voice_en . '" class="regular-text"><p class="description">Standaard: kLhAstPcnnPxqzk6gS5i. Leeg = Engelse variant uitgeschakeld.</p></td></tr>';
+    echo '<tr><th>YouTube afspeellijst-ID (EN)</th><td><input type="text" name="pd_youtube_playlist_en" value="' . $pl_en . '" class="regular-text"><p class="description">Wordt automatisch aangemaakt ("Mosje\'s Bedtime Stories") bij de eerste video. Je kunt een bestaand ID invullen om videos daarin te zetten.</p></td></tr>';
+    echo '</table>';
+    echo '<h2>Engelse karakternamen</h2><p>Optioneel: vul een Engelse naam in per personage. Wordt gebruikt in de vertaalprompt.</p>';
+    echo '<table class="form-table">';
+    foreach ($canon['characters'] as $ch) {
+        $slug = pd_slugify((string) ($ch['name'] ?? ''));
+        $en_val = esc_attr((string) ($ch['name_en'] ?? ''));
+        echo '<tr><th>' . esc_html((string) ($ch['name'] ?? '')) . '</th><td><input type="text" name="pd_char_name_en[' . esc_attr($slug) . ']" value="' . $en_val . '" class="regular-text" placeholder="Engelse naam (optioneel)"></td></tr>';
+    }
+    echo '</table>';
+    wp_nonce_field('pd_en_save', 'pd_en_nonce');
+    submit_button('Opslaan');
+    echo '</form>';
+    if ('' !== $voice_en) {
+        echo '<hr><h2>Status</h2><p>Engelse variant: <strong style="color:green">actief</strong> (voice ' . esc_html($voice_en) . ').</p>';
+    } else {
+        echo '<hr><h2>Status</h2><p>Engelse variant: <strong style="color:#666">uitgeschakeld</strong> (geen voice-ID ingesteld).</p>';
+    }
+    echo '</div>';
+}
+
+/* ====================================================================
+ * TIKTOK-PUBLISHER — standalone (no dierenhart-core class dependency)
+ * Credentials opgeslagen op blog 5 (pd_-prefix).
+ * ==================================================================== */
+
+function pd_tt_access_token(): string|\WP_Error {
+    $token = trim((string) pd_get('pd_tiktok_token'));
+    if ('' !== $token) { return $token; }
+
+    $cached = get_blog_option(PD_BLOG, '_pd_tt_access_token_cache', '');
+    $cached_exp = (int) get_blog_option(PD_BLOG, '_pd_tt_access_token_exp', 0);
+    if ('' !== $cached && time() < $cached_exp) { return $cached; }
+
+    $client_key    = trim((string) pd_get('pd_tiktok_client_key'));
+    $client_secret = trim((string) pd_get('pd_tiktok_client_secret'));
+    $refresh       = trim((string) pd_get('pd_tiktok_refresh_token'));
+    if ('' === $client_key || '' === $client_secret || '' === $refresh) {
+        return new WP_Error('pd_tt_no_creds', 'TikTok-credentials ontbreken (praatdeurtje).');
+    }
+    $resp = wp_remote_post('https://open.tiktokapis.com/v2/oauth/token/', array(
+        'timeout' => 30,
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+        'body'    => array(
+            'client_key'    => $client_key,
+            'client_secret' => $client_secret,
+            'grant_type'    => 'refresh_token',
+            'refresh_token' => $refresh,
+        ),
+    ));
+    if (is_wp_error($resp)) { return new WP_Error('pd_tt_http', 'TikTok token HTTP: ' . $resp->get_error_message()); }
+    $d = json_decode((string) wp_remote_retrieve_body($resp), true);
+    $access = is_array($d) ? (string) ($d['access_token'] ?? '') : '';
+    if ('' === $access) { return new WP_Error('pd_tt_no_token', 'Geen TikTok access-token (refresh verlopen?).'); }
+    $ttl = max(60, (int) ($d['expires_in'] ?? 86400) - 120);
+    update_blog_option(PD_BLOG, '_pd_tt_access_token_cache', $access);
+    update_blog_option(PD_BLOG, '_pd_tt_access_token_exp', time() + $ttl);
+    if (!empty($d['refresh_token']) && (string) $d['refresh_token'] !== $refresh) {
+        pd_set('pd_tiktok_refresh_token', (string) $d['refresh_token']);
+    }
+    return $access;
+}
+
+/** Stuurt de video naar TikTok via PULL_FROM_URL. Geeft TikTok-profiel-URL terug of WP_Error. */
+function pd_post_tiktok(string $video_url, array $story): string|\WP_Error {
+    if ('1' !== (string) pd_get('pd_tiktok_enabled')) {
+        return new WP_Error('pd_tt_disabled', 'TikTok uitgeschakeld.');
+    }
+    if ('' === $video_url) { return new WP_Error('pd_tt_no_video', 'Geen video-URL voor TikTok.'); }
+
+    $token = pd_tt_access_token();
+    if (is_wp_error($token)) { return $token; }
+
+    $privacy = (string) pd_get('pd_tiktok_privacy');
+    if (!in_array($privacy, array('SELF_ONLY', 'PUBLIC_TO_EVERYONE', 'MUTUAL_FOLLOW_FRIENDS', 'FOLLOWER_OF_CREATOR'), true)) {
+        $privacy = 'SELF_ONLY';
+    }
+
+    $caption = mb_substr((string) ($story['title'] ?? ''), 0, 100, 'UTF-8');
+    $caption .= ' #praatdeurtje #kinderverhaaltje #bedtimestory #mosje';
+
+    $resp = wp_remote_post('https://open.tiktokapis.com/v2/post/publish/video/init/', array(
+        'timeout' => 60,
+        'headers' => array(
+            'Authorization' => 'Bearer ' . $token,
+            'Content-Type'  => 'application/json; charset=UTF-8',
+        ),
+        'body' => wp_json_encode(array(
+            'post_info'   => array(
+                'title'                    => $caption,
+                'privacy_level'            => $privacy,
+                'disable_comment'          => false,
+                'disable_duet'             => false,
+                'disable_stitch'           => false,
+                'video_cover_timestamp_ms' => 1000,
+            ),
+            'source_info' => array(
+                'source'    => 'PULL_FROM_URL',
+                'video_url' => $video_url,
+            ),
+        )),
+    ));
+
+    if (is_wp_error($resp)) { return new WP_Error('pd_tt_http', 'TikTok HTTP: ' . $resp->get_error_message()); }
+    $data = json_decode((string) wp_remote_retrieve_body($resp), true);
+    $err  = is_array($data) ? ($data['error'] ?? array()) : array();
+    if (is_array($err) && isset($err['code']) && 'ok' !== $err['code']) {
+        return new WP_Error('pd_tt_api', 'TikTok API: ' . (string) ($err['message'] ?? $err['code']));
+    }
+    $publish_id = is_array($data) ? (string) ($data['data']['publish_id'] ?? '') : '';
+    if ('' === $publish_id) { return new WP_Error('pd_tt_no_id', 'TikTok gaf geen publish_id.'); }
+    return 'https://www.tiktok.com/@praatdeurtje';
+}
+
+/* ====================================================================
+ * TIKTOK OAUTH — start-handler (admin_init) + REST callback endpoint
+ * ==================================================================== */
+add_action('admin_init', function () {
+    if (get_current_blog_id() !== PD_BLOG) { return; }
+    if (!isset($_GET['page']) || 'pd-tiktok' !== sanitize_key((string) $_GET['page'])) { return; }
+    if (!current_user_can('manage_options')) { return; }
+
+    if (isset($_GET['pd_tt_action']) && 'start' === sanitize_key((string) $_GET['pd_tt_action'])) {
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash((string) $_GET['_wpnonce'])), 'pd_tt_start')) {
+            wp_die('Ongeldige nonce.');
+        }
+        $client_key = trim((string) pd_get('pd_tiktok_client_key'));
+        if ('' === $client_key) { wp_die('Vul eerst de Client Key in en sla op, dan pas verbinden.'); }
+        $state = wp_generate_password(20, false);
+        update_blog_option(PD_BLOG, '_pd_tt_oauth_state', $state);
+        update_blog_option(PD_BLOG, '_pd_tt_oauth_state_exp', time() + 300);
+        $redirect = get_rest_url(PD_BLOG, 'pd/v1/tiktok-callback');
+        $url = add_query_arg(array(
+            'client_key'    => $client_key,
+            'scope'         => 'video.publish',
+            'response_type' => 'code',
+            'redirect_uri'  => $redirect,
+            'state'         => $state,
+        ), 'https://www.tiktok.com/v2/auth/authorize/');
+        wp_redirect($url);
+        exit;
+    }
+});
+
+add_action('rest_api_init', function () {
+    register_rest_route('pd/v1', '/tiktok-callback', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'pd_tt_oauth_callback',
+        'permission_callback' => '__return_true',
+    ));
+});
+
+function pd_tt_oauth_callback(WP_REST_Request $req): void {
+    $admin_url = get_admin_url(PD_BLOG, 'admin.php?page=pd-tiktok');
+    $error     = (string) $req->get_param('error');
+
+    if ('' !== $error) {
+        update_blog_option(PD_BLOG, '_pd_tt_oauth_notice', array('type' => 'error', 'msg' => 'TikTok toegang geweigerd: ' . $error));
+        wp_redirect($admin_url);
+        exit;
+    }
+
+    $code  = (string) $req->get_param('code');
+    $state = (string) $req->get_param('state');
+
+    $stored = (string) get_blog_option(PD_BLOG, '_pd_tt_oauth_state', '');
+    $exp    = (int) get_blog_option(PD_BLOG, '_pd_tt_oauth_state_exp', 0);
+    if ('' === $stored || $stored !== $state || time() > $exp) {
+        update_blog_option(PD_BLOG, '_pd_tt_oauth_notice', array('type' => 'error', 'msg' => 'Ongeldige of verlopen state — probeer opnieuw.'));
+        wp_redirect($admin_url);
+        exit;
+    }
+    delete_blog_option(PD_BLOG, '_pd_tt_oauth_state');
+    delete_blog_option(PD_BLOG, '_pd_tt_oauth_state_exp');
+
+    $client_key    = trim((string) pd_get('pd_tiktok_client_key'));
+    $client_secret = trim((string) pd_get('pd_tiktok_client_secret'));
+    $redirect      = get_rest_url(PD_BLOG, 'pd/v1/tiktok-callback');
+
+    $resp = wp_remote_post('https://open.tiktokapis.com/v2/oauth/token/', array(
+        'timeout' => 30,
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+        'body'    => array(
+            'client_key'    => $client_key,
+            'client_secret' => $client_secret,
+            'grant_type'    => 'authorization_code',
+            'code'          => $code,
+            'redirect_uri'  => $redirect,
+        ),
+    ));
+
+    if (is_wp_error($resp)) {
+        update_blog_option(PD_BLOG, '_pd_tt_oauth_notice', array('type' => 'error', 'msg' => 'Token-ophalen mislukt: ' . $resp->get_error_message()));
+    } else {
+        $d = json_decode((string) wp_remote_retrieve_body($resp), true);
+        if (!empty($d['refresh_token'])) {
+            pd_set('pd_tiktok_refresh_token', (string) $d['refresh_token']);
+            delete_blog_option(PD_BLOG, '_pd_tt_access_token_cache');
+            update_blog_option(PD_BLOG, '_pd_tt_oauth_connected_at', gmdate('Y-m-d H:i') . ' UTC');
+            update_blog_option(PD_BLOG, '_pd_tt_oauth_notice', array('type' => 'success', 'msg' => 'TikTok-account verbonden! Refresh-token opgeslagen.'));
+        } else {
+            $msg = is_array($d) ? (string) ($d['error_description'] ?? $d['message'] ?? wp_json_encode($d)) : 'Geen token ontvangen.';
+            update_blog_option(PD_BLOG, '_pd_tt_oauth_notice', array('type' => 'error', 'msg' => 'Verbinding mislukt: ' . $msg));
+        }
+    }
+    wp_redirect($admin_url);
+    exit;
+}
+
+/* ====================================================================
+ * ADMINPAGINA "TikTok" — koppeling en instellingen
+ * ==================================================================== */
+function pd_tt_admin_page(): void {
+    if (!current_user_can('manage_options')) { return; }
+
+    // Opslaan
+    if (isset($_POST['pd_tt_nonce']) && wp_verify_nonce(sanitize_text_field(wp_unslash((string) $_POST['pd_tt_nonce'])), 'pd_tt_save')) {
+        pd_set('pd_tiktok_client_key',    sanitize_text_field(wp_unslash((string) ($_POST['pd_tiktok_client_key'] ?? ''))));
+        pd_set('pd_tiktok_client_secret', sanitize_text_field(wp_unslash((string) ($_POST['pd_tiktok_client_secret'] ?? ''))));
+        pd_set('pd_tiktok_privacy',       sanitize_text_field(wp_unslash((string) ($_POST['pd_tiktok_privacy'] ?? 'SELF_ONLY'))));
+        pd_set('pd_tiktok_enabled',       isset($_POST['pd_tiktok_enabled']) ? '1' : '0');
+        echo '<div class="notice notice-success is-dismissible"><p>Opgeslagen.</p></div>';
+    }
+
+    // OAuth notice tonen
+    $notice = get_blog_option(PD_BLOG, '_pd_tt_oauth_notice', array());
+    if (!empty($notice['msg'])) {
+        delete_blog_option(PD_BLOG, '_pd_tt_oauth_notice');
+        $cls = ('error' === ($notice['type'] ?? '')) ? 'notice-error' : 'notice-success';
+        echo '<div class="notice ' . esc_attr($cls) . ' is-dismissible"><p>' . esc_html((string) $notice['msg']) . '</p></div>';
+    }
+
+    $client_key    = esc_attr((string) pd_get('pd_tiktok_client_key'));
+    $client_secret = esc_attr((string) pd_get('pd_tiktok_client_secret'));
+    $privacy       = (string) pd_get('pd_tiktok_privacy') ?: 'SELF_ONLY';
+    $enabled       = '1' === (string) pd_get('pd_tiktok_enabled');
+    $refresh       = trim((string) pd_get('pd_tiktok_refresh_token'));
+    $connected     = '' !== $refresh;
+    $connected_at  = (string) get_blog_option(PD_BLOG, '_pd_tt_oauth_connected_at', '');
+
+    $redirect_uri = get_rest_url(PD_BLOG, 'pd/v1/tiktok-callback');
+
+    echo '<div class="wrap"><h1>Praatdeurtje — TikTok</h1>';
+    echo '<p>Elke aflevering wordt automatisch geplaatst op TikTok via de Content Posting API (PULL_FROM_URL). De video moet publiek bereikbaar zijn op het moment van posten.</p>';
+    echo '<p><strong>Redirect-URI voor je TikTok developer-app (Web platform):</strong> <code>' . esc_html($redirect_uri) . '</code></p>';
+
+    echo '<form method="post"><table class="form-table">';
+    echo '<tr><th>TikTok aan</th><td><label><input type="checkbox" name="pd_tiktok_enabled" value="1"' . checked($enabled, true, false) . '> Publiceer naar TikTok</label></td></tr>';
+    echo '<tr><th>Client Key</th><td><input type="text" name="pd_tiktok_client_key" value="' . $client_key . '" class="regular-text" autocomplete="off"></td></tr>';
+    echo '<tr><th>Client Secret</th><td><input type="password" name="pd_tiktok_client_secret" value="' . $client_secret . '" class="large-text" autocomplete="off"></td></tr>';
+    echo '<tr><th>Privacy</th><td><select name="pd_tiktok_privacy">';
+    foreach (array(
+        'PUBLIC_TO_EVERYONE'   => 'Publiek (PUBLIC_TO_EVERYONE)',
+        'FOLLOWER_OF_CREATOR'  => 'Volgers (FOLLOWER_OF_CREATOR)',
+        'MUTUAL_FOLLOW_FRIENDS'=> 'Vrienden (MUTUAL_FOLLOW_FRIENDS)',
+        'SELF_ONLY'            => 'Privé / concept (SELF_ONLY)',
+    ) as $val => $lbl) {
+        echo '<option value="' . esc_attr($val) . '"' . selected($privacy, $val, false) . '>' . esc_html($lbl) . '</option>';
+    }
+    echo '</select></td></tr>';
+    echo '<tr><th>Account</th><td>';
+    if ($connected) {
+        echo '<span style="color:#00a32a">&#10003; Verbonden</span>';
+        if ('' !== $connected_at) { echo ' <span style="color:#666">— ' . esc_html($connected_at) . '</span>'; }
+        echo '<br><a href="' . esc_url(wp_nonce_url(add_query_arg('pd_tt_action', 'start'), 'pd_tt_start')) . '" style="font-size:12px">Opnieuw verbinden</a>';
+    } else {
+        echo '<span style="color:#d63638">&#10007; Nog niet verbonden</span>';
+        echo '<br><a class="button button-secondary" style="margin-top:6px" href="' . esc_url(wp_nonce_url(add_query_arg('pd_tt_action', 'start'), 'pd_tt_start')) . '">Verbind TikTok-account</a>';
+        echo '<p class="description">Sla Client Key + Secret op, dan klikken.</p>';
+    }
+    echo '</td></tr>';
+    echo '</table>';
+    wp_nonce_field('pd_tt_save', 'pd_tt_nonce');
+    submit_button('Opslaan');
+    echo '</form></div>';
 }
